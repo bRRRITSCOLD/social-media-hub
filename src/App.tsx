@@ -1,26 +1,49 @@
+// node_modules
 import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import {
+  Redirect, Route, Switch, Link,
+} from 'react-router-dom';
+import AppBar from '@material-ui/core/AppBar';
+import Toolbar from '@material-ui/core/Toolbar';
+import Button from '@material-ui/core/Button';
+import IconButton from '@material-ui/core/IconButton';
+import MenuIcon from '@material-ui/icons/Menu';
 
-function App() {
+// styles
+import { useAppStyles } from './App.styles';
+
+// pags
+import Home from './pages/Home';
+
+const App: React.FC = () => {
+  const classes = useAppStyles();
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <div className={classes.root}>
+        <AppBar position="static">
+          <Toolbar>
+            <IconButton edge="start" color="inherit" aria-label="menu">
+              <MenuIcon />
+            </IconButton>
+            <Button component={Link} to="/" color="inherit">
+              Home
+            </Button>
+            <Button component={Link} to="/about" color="inherit">
+              About
+            </Button>
+          </Toolbar>
+        </AppBar>
+      </div>
+      <Switch>
+        <Route exact path="/" component={Home} />
+        <Route exact path="/about">
+          <h1>About Page</h1>
+        </Route>
+        <Redirect to="/" />
+      </Switch>
     </div>
   );
-}
+};
 
 export default App;
