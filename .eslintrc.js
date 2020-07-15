@@ -31,6 +31,7 @@ module.exports = {
     'react/jsx-filename-extension': [1, { extensions: ['.ts', '.tsx'] }],
     'import/prefer-default-export': [0],
     'arrow-body-style': [0],
+    '@typescript-eslint/no-unsafe-assignment': [0]
   },
   settings: {
     react: {

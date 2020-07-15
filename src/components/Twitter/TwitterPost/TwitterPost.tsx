@@ -11,7 +11,13 @@ import Typography from '@material-ui/core/Typography';
 // styles
 import { useTwitterPostStyles } from './TwitterPost.styles';
 
-const TwitterPost: React.FC = () => {
+// models
+import { TwitterPostInterface } from '../../../models/twitter';
+
+const TwitterPost: React.FC<TwitterPostInterface> = (props: TwitterPostInterface) => {
+  // deconstruct props for ease
+  const { body, createdDate } = props;
+  // hooks
   const twitterPostStyles = useTwitterPostStyles();
 
   return (
