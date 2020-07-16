@@ -10,5 +10,21 @@ export const initialTwitterStoreState: TwitterStoreInterface = {
       body: 'Hello Word',
       createdDate: new Date(),
     },
+    {
+      body: 'Hello Word',
+      createdDate: new Date(),
+    },
+    {
+      body: 'Hello Word',
+      createdDate: new Date(),
+    },
+    {
+      body: 'Hello Word',
+      createdDate: new Date(),
+    },
+    {
+      body: 'Hello Word',
+      createdDate: new Date(),
+    },
   ],
 };

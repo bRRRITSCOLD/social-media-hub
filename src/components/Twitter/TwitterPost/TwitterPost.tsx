@@ -21,7 +21,7 @@ const TwitterPost: React.FC<TwitterPostInterface> = (props: TwitterPostInterface
   const twitterPostStyles = useTwitterPostStyles();
 
   return (
-    <Card className={twitterPostStyles.root}>
+    <Card>
       <CardActionArea>
         <CardMedia
           className={twitterPostStyles.media}
