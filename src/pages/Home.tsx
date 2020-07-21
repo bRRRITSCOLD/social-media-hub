@@ -1,15 +1,20 @@
 // node_modules
-import React from 'react';
+import React, { useEffect } from 'react';
 
 // componenets
 import TwitterPostForm from '../components/Twitter/TwitterPostForm/TwitterPostForm';
 import TwitterPostList from '../components/Twitter/TwitterPostList/TwitterPostList';
 
 // styles
-import { useStoreState } from '../hooks/store';
+import { useStoreActions, useStoreState } from '../hooks/store';
 
 const Home: React.FC = () => {
   const twitterStore = useStoreState((state) => state.twitter);
+  const twitterActions = useStoreActions((state) => state.twitter);
+  useEffect(() => {
+    twitterActions.getPosts();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   return (
     <>
       <TwitterPostForm />
