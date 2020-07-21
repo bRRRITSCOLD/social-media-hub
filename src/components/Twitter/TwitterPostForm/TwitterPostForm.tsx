@@ -28,9 +28,9 @@ const TwitterPostForm: React.FC<any> = () => {
   } = useForm<{ body: string }>({
     resolver: joiResolver(formSchema),
   });
-  const addPost = useStoreActions((state) => state.twitter.addPost);
-  const onSubmit = (data: any): void => {
-    addPost(data);
+  const twitterActions = useStoreActions((state) => state.twitter);
+  const onSubmit = async (data: any): Promise<void> => {
+    await twitterActions.postPost(data);
     reset({
       body: '',
     });

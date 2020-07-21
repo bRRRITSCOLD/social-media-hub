@@ -5,6 +5,7 @@ import {
   Thunk,
   thunk,
 } from 'easy-peasy';
+import get from 'lodash/get';
 
 // libraries
 import { socialMediaHubApiClient } from '../lib/http';
@@ -17,6 +18,7 @@ export interface TwitterStoreInterface {
   setPosts: Action<TwitterStoreInterface, TwitterPostInterface[]>;
   addPost: Action<TwitterStoreInterface, TwitterPostInterface>;
   getPosts: Thunk<TwitterStoreInterface>;
+  postPost: Thunk<TwitterStoreInterface, TwitterPostInterface>;
 }
 
 export const initialTwitterStoreState: TwitterStoreInterface = {
@@ -27,7 +29,7 @@ export const initialTwitterStoreState: TwitterStoreInterface = {
   addPost: action((state, post) => {
     state.posts.push({
       ...post,
-      createdDate: new Date().toISOString(),
+      createdDate: get(post, 'createdDate', new Date().toISOString()),
     });
   }),
   getPosts: thunk(async (state) => {
@@ -37,6 +39,23 @@ export const initialTwitterStoreState: TwitterStoreInterface = {
         url: '/posts',
       });
       state.setPosts(getPostsResponse.data);
+    } catch (err) {
+      console.log(err);
+    }
+  }),
+  postPost: thunk(async (state, post) => {
+    try {
+      const newPost = {
+        ...post,
+        createdDate: get(post, 'createdDate', new Date().toISOString()),
+      };
+      const postPostResponse = await socialMediaHubApiClient({
+        method: 'POST',
+        url: '/posts',
+        headers: { 'content-type': 'application/json' },
+        data: newPost,
+      });
+      state.addPost(newPost);
     } catch (err) {
       console.log(err);
     }
