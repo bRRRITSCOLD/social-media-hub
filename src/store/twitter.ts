@@ -19,9 +19,12 @@ export interface TwitterStoreInterface {
   addPost: Action<TwitterStoreInterface, TwitterPostInterface>;
   getPosts: Thunk<TwitterStoreInterface>;
   postPost: Thunk<TwitterStoreInterface, TwitterPostInterface>;
+  // new
+  getOAuthRequestToken: Thunk<TwitterStoreInterface>;
+  getOAuthAccessToken: Thunk<TwitterStoreInterface>;
 }
 
-export const initialTwitterStoreState: TwitterStoreInterface = {
+export const twitterStore: TwitterStoreInterface = {
   posts: [],
   setPosts: action((state, posts) => {
     state.posts = posts;
@@ -56,6 +59,41 @@ export const initialTwitterStoreState: TwitterStoreInterface = {
         data: newPost,
       });
       state.addPost(newPost);
+    } catch (err) {
+      console.log(err);
+    }
+  }),
+  // new
+  getOAuthRequestToken: thunk(async (state) => {
+    try {
+      const connectResponse = await socialMediaHubApiClient({
+        method: 'POST',
+        url: '/graphql',
+        headers: {
+          'content-type': 'application/json',
+        },
+        data: { query: '{ getOAuthRequestToken }' },
+        withCredentials: true,
+      });
+      const url = get(connectResponse, 'data.data.getOAuthRequestToken');
+      console.log(url);
+      // window.location.replace(url);
+    } catch (err) {
+      console.log(err);
+    }
+  }),
+  getOAuthAccessToken: thunk(async (state) => {
+    try {
+      const connectResponse = await socialMediaHubApiClient({
+        method: 'POST',
+        url: '/graphql',
+        headers: {
+          'content-type': 'application/json',
+        },
+        data: { query: '{ getOAuthAccessToken }' },
+      });
+      const url = get(connectResponse, 'data.data.login');
+      window.location.replace(url);
     } catch (err) {
       console.log(err);
     }

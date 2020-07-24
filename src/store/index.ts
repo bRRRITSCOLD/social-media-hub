@@ -2,14 +2,14 @@
 import { createStore } from 'easy-peasy';
 
 // stores
-import { TwitterStoreInterface, initialTwitterStoreState } from './twitter';
+import { TwitterStoreInterface, twitterStore } from './twitter';
 
 export interface StoreInterface {
   twitter: TwitterStoreInterface
 }
 
 const store: StoreInterface = {
-  twitter: initialTwitterStoreState,
+  twitter: twitterStore,
 };
 
 export default createStore<StoreInterface>(store);

@@ -34,6 +34,7 @@ module.exports = {
     '@typescript-eslint/no-unsafe-assignment': [0],
     '@typescript-eslint/unbound-method': [0],
     "no-param-reassign": [0],
+    "react/jsx-closing-bracket-location": [0]
   },
   settings: {
     react: {

@@ -13,8 +13,9 @@ import Container from '@material-ui/core/Container';
 // styles
 import { useAppStyles } from './App.styles';
 
-// pags
+// pages
 import Home from './pages/Home';
+import TwitterOAuthCallback from './pages/Twitter/TwitterOAuthCallback';
 
 const App: React.FC = () => {
   const classes = useAppStyles();
@@ -40,6 +41,7 @@ const App: React.FC = () => {
           <Route exact path="/about">
             <h1>About Page</h1>
           </Route>
+          <Route exact path="/twitter/oauth/callback" component={TwitterOAuthCallback} />
           <Redirect to="/" />
         </Switch>
       </Container>
