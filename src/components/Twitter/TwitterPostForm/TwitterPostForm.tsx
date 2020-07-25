@@ -8,7 +8,9 @@ import capitalize from 'lodash/capitalize';
 
 // styles
 import { useTwitterPostFormStyles } from './TwitterPostForm.styles';
-import { useStoreActions } from '../../../hooks/store';
+
+// hooks
+import { useStoreActions } from '../../../lib/hooks';
 
 // models
 

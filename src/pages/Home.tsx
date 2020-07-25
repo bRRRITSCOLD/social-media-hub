@@ -7,15 +7,13 @@ import TwitterPostForm from '../components/Twitter/TwitterPostForm/TwitterPostFo
 // import TwitterPostList from '../components/Twitter/TwitterPostList/TwitterPostList';
 
 // styles
-// import { useStoreActions, useStoreState } from '../hooks/store';
-import { useStoreActions } from '../hooks/store';
+// import { useStoreActions, useStoreState } from '../hooks';
+import { useStoreActions } from '../lib/hooks';
 
 const Home: React.FC = ({ location }: any) => {
   // const twitterStore = useStoreState((state) => state.twitter);
   const twitterActions = useStoreActions((state) => state.twitter);
   useEffect(() => {
-    console.log(location);
-    // twitterActions.getPosts();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return (

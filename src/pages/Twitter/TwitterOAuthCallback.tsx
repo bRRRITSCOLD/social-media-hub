@@ -8,17 +8,19 @@ import TwitterPostForm from '../../components/Twitter/TwitterPostForm/TwitterPos
 // import TwitterPostList from '../components/Twitter/TwitterPostList/TwitterPostList';
 
 // styles
-// import { useStoreActions, useStoreState } from '../hooks/store';
-import { useStoreActions } from '../../hooks/store';
+// import { useStoreActions, useStoreState } from '../hooks';
+import { useStoreActions, useUrlQueryString } from '../../lib/hooks';
 
 const TwitterOAuthCallback: React.FC = ({ location }: any) => {
+  // init hooks
   // const twitterStore = useStoreState((state) => state.twitter);
   const twitterActions = useStoreActions((state) => state.twitter);
+  const urlQueryString = useUrlQueryString();
+  // file constants
+  const oAuthVerifier = urlQueryString.get('oauth_verifier');
+  // call use effect only once (page load)
   useEffect(() => {
-    console.log('callback useEffect');
-    console.log(location);
-    console.log(window.location.href);
-    twitterActions.getOAuthAccessToken();
+    twitterActions.getOAuthAccessToken({ oAuthVerifier } as { oAuthVerifier: string; });
   }, []);
   return (
     <>
