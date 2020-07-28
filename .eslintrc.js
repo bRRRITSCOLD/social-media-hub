@@ -35,7 +35,8 @@ module.exports = {
     '@typescript-eslint/unbound-method': [0],
     "no-param-reassign": [0],
     "react/jsx-closing-bracket-location": [0],
-    "max-len": [0]
+    "max-len": [0],
+    'react/require-default-props': [0],
   },
   settings: {
     react: {

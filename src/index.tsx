@@ -3,6 +3,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { StoreProvider } from 'easy-peasy';
+import { CssBaseline, MuiThemeProvider } from '@material-ui/core';
 
 // css
 import './index.css';
@@ -13,14 +14,20 @@ import App from './App';
 // store
 import store from './store';
 
+// theme
+import theme from './theme';
+
 // import * as serviceWorker from './serviceWorker';
 
 ReactDOM.render(
   <StoreProvider store={store}>
     <Router>
-      <React.StrictMode>
-        <App />
-      </React.StrictMode>
+      <MuiThemeProvider theme={theme}>
+        <CssBaseline />
+        <React.StrictMode>
+          <App />
+        </React.StrictMode>
+      </MuiThemeProvider>
     </Router>
   </StoreProvider>,
   document.getElementById('root'),

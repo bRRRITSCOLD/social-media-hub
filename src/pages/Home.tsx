@@ -8,7 +8,7 @@ import TwitterPostForm from '../components/Twitter/TwitterPostForm/TwitterPostFo
 
 // styles
 // import { useStoreActions, useStoreState } from '../hooks';
-import { useStoreActions } from '../lib/hooks';
+import { useStoreActions, useStoreState } from '../lib/hooks';
 
 const Home: React.FC = ({ location }: any) => {
   // const twitterStore = useStoreState((state) => state.twitter);
@@ -16,13 +16,15 @@ const Home: React.FC = ({ location }: any) => {
   useEffect(() => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  const onClick = async () => {
+    await twitterActions.getOAuthRequestToken();
+    return false;
+  };
+  // let loading = false;
   return (
     <>
       <TwitterPostForm />
-      <Button onClick={async () => {
-        await twitterActions.getOAuthRequestToken();
-        return false;
-      }}>
+      <Button onClick={onClick}>
         Connect
       </Button>
       {/* <TwitterPostList posts={twitterStore.posts} /> */}
