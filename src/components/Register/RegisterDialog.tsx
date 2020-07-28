@@ -69,7 +69,6 @@ export function RegisterDialog(props: {
       repeatedPassword: '',
     });
   };
-  console.log(classes);
   // render component
   return (
     <>
@@ -80,24 +79,24 @@ export function RegisterDialog(props: {
         disableEscapeKeyDown={disableEscapeKeyDown}
         hideBackdrop={hideBackdrop}
       >
-        <DialogTitle>
-          <Box display="flex" justifyContent="space-between">
-            <Typography variant="h5">Register</Typography>
-            <IconButton
-              className={registerDialogStyles.dialogTitleCloseButton}
-              onClick={onClose}
-              disabled={disableBackdropClick || disableEscapeKeyDown}
-              aria-label="Close"
-            >
-              <CloseIcon />
-            </IconButton>
-          </Box>
-        </DialogTitle>
-        <DialogContent>
-          <form
-            noValidate
-            onSubmit={handleSubmit(onSubmit)}
-          >
+        <form
+          noValidate
+          onSubmit={handleSubmit(onSubmit)}
+        >
+          <DialogTitle>
+            <Box display="flex" justifyContent="space-between">
+              <Typography variant="h5">Register</Typography>
+              <IconButton
+                className={registerDialogStyles.dialogTitleCloseButton}
+                onClick={onClose}
+                disabled={disableBackdropClick || disableEscapeKeyDown}
+                aria-label="Close"
+              >
+                <CloseIcon />
+              </IconButton>
+            </Box>
+          </DialogTitle>
+          <DialogContent>
             <TextField
               className={registerDialogStyles.dialogContentInput}
               autoFocus
@@ -134,17 +133,21 @@ export function RegisterDialog(props: {
               error={!!errors.repeatedPassword}
               helperText={errors.repeatedPassword ? `${capitalize(errors.repeatedPassword.message?.replace(/"/g, ''))}.` : ''}
             />
-          </form>
-        </DialogContent>
-        <DialogActions
-          className={registerDialogStyles.dialogActions}
-        >
-          <Button
-            className={registerDialogStyles.dialogActionsButton}
+          </DialogContent>
+          <DialogActions
+            className={registerDialogStyles.dialogActions}
           >
-            Register
-          </Button>
-        </DialogActions>
+            <Button
+              color="primary"
+              className={registerDialogStyles.dialogActionsButton}
+              variant="contained"
+              size="large"
+              type="submit"
+            >
+              Register
+            </Button>
+          </DialogActions>
+        </form>
       </Dialog>
     </>
     // <Dialog

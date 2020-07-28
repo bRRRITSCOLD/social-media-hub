@@ -1,6 +1,8 @@
 import { createMuiTheme, responsiveFontSizes } from '@material-ui/core';
 
 // colors
+const primary = '#4829B2';
+
 // border
 
 // breakpoints
@@ -14,6 +16,9 @@ const xs = 0;
 const spacing = 8;
 
 const theme = createMuiTheme({
+  palette: {
+    primary: { main: primary },
+  },
   spacing,
   breakpoints: {
     // Define custom breakpoint values.
