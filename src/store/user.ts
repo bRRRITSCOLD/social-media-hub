@@ -7,13 +7,13 @@ import {
   thunk,
   Thunk,
 } from 'easy-peasy';
-import { get } from 'lodash';
 
 // libraries
 import { socialMediaHubApiClient } from '../lib/http';
-import { delay } from '../lib/utils';
 
 // models
+import { RegisterDialogFormInterface } from '../components/Register/RegisterDialog';
+import { get } from 'lodash';
 
 export interface UserStoreInterface {
   jwt: string;
@@ -25,7 +25,7 @@ export interface UserStoreInterface {
   setJwt: Action<UserStoreInterface, string>;
   setIsRegisteringUser: Action<UserStoreInterface, boolean>;
   setRegisterUserError: Action<UserStoreInterface, Error | undefined>;
-  registerUser: Thunk<UserStoreInterface, { [key: string]: any }, UserStoreInterface>;
+  registerUser: Thunk<UserStoreInterface, RegisterDialogFormInterface, UserStoreInterface>;
 }
 
 export const userStore: UserStoreInterface = {
@@ -45,8 +45,15 @@ export const userStore: UserStoreInterface = {
     console.log(registerUserError);
     state.registerUserError = registerUserError;
   }),
-  registerUser: thunk(async (actions, user) => {
+  registerUser: thunk(async (actions, registerUserInput) => {
     try {
+      // deconstruct for ease
+      const {
+        firstName,
+        lastName,
+        emailAddress,
+        password,
+      } = registerUserInput;
       // indicate we are registering
       actions.setIsRegisteringUser(true);
       // clear any old errors
@@ -54,10 +61,32 @@ export const userStore: UserStoreInterface = {
       // call api to register user
       const socialMediaHubApiClientResponse = await socialMediaHubApiClient({
         method: 'POST',
-        url: '/users',
+        url: '/graphql',
         headers: { 'content-type': 'application/json' },
-        data: {},
+        data: {
+          query: `mutation registerUser($data: RegisterUserInputType!) {
+            registerUser(data: $data) {
+              firstName,
+              lastName,
+              emailAddress,
+              password
+            }
+          }`,
+          variables: {
+            data: {
+              firstName,
+              lastName,
+              emailAddress,
+              password,
+            },
+          },
+        },
       });
+      // validate response is okay
+      if (socialMediaHubApiClientResponse.status !== 200) {
+        // build and throw error
+        throw new Error(get(socialMediaHubApiClientResponse, 'data.errors[0].message', 'Unknown error.'));
+      }
       // indicate we are not regitering any more
       actions.setIsRegisteringUser(false);
       // return explicitly

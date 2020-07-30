@@ -6,7 +6,6 @@ import {
   Box,
   TextField, IconButton, Typography, Dialog, DialogTitle, DialogContent, DialogActions, Button, Collapse,
 } from '@material-ui/core';
-import Alert from '@material-ui/lab/Alert';
 import CloseIcon from '@material-ui/icons/Close';
 import React from 'react';
 
@@ -88,27 +87,6 @@ export function RegisterDialog(props: RegisterDialogPropsInterface): JSX.Element
           overflowY: 'hidden',
         }}
       >
-        {/* <Dialog
-          scroll="body"
-          open={error && error !== '' ? error as any : false}
-          onClose={onErrorClose}
-          PaperComponent={Alert as any}
-          PaperProps={{
-            color: 'error',
-            action: (
-              <IconButton
-                aria-label="close"
-                color="inherit"
-                size="small"
-                onClick={onErrorClose}
-              >
-                <CloseIcon fontSize="inherit" />
-              </IconButton>
-            ),
-          } as any}
-        >
-          {error}
-        </Dialog> */}
         <form
           noValidate
           onSubmit={onSubmit as any}
