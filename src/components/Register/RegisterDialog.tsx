@@ -9,16 +9,11 @@ import {
 import Alert from '@material-ui/lab/Alert';
 import CloseIcon from '@material-ui/icons/Close';
 import React from 'react';
-import { useForm } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers';
-import { capitalize } from 'lodash';
-import * as yup from 'yup';
 
 // components
 
 // styles
 import { useRegisterDialogStyles } from './RegisterDialog.styles';
-import { useStoreActions, useStoreState } from '../../lib/hooks';
 
 // form
 export interface RegisterDialogFormInterface {
@@ -29,46 +24,39 @@ export interface RegisterDialogFormInterface {
   confirmPassword: string;
 }
 
-const registerDialogFormSchema: yup.ObjectSchema<RegisterDialogFormInterface | undefined> = yup.object().shape({
-  firstName: yup
-    .string()
-    .label('First Name')
-    .required(),
-  lastName: yup
-    .string()
-    .label('Last Name')
-    .required(),
-  emailAddress: yup
-    .string()
-    .label('Email')
-    .email()
-    .required(),
-  password: yup
-    .string()
-    .label('Password')
-    .required()
-    .min(2)
-    .max(16),
-  confirmPassword: yup
-    .string()
-    .required('Please confirm your password.')
-    .label('Confirm password')
-    .test('passwords-match', 'Passwords must match.', function (value) {
-      return this.parent.password === value;
-    }),
-});
-
 export interface RegisterDialogPropsInterface {
   open: boolean;
   loading?: boolean
-  error?: string;
-  disableBackdropClick?: boolean;
-  disableEscapeKeyDown?: boolean;
-  hideBackdrop?: boolean
-  onDialogClose?: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
+  form: {
+    firstName: {
+      ref?: any;
+      value?: any;
+      error?: { message?: string };
+    };
+    lastName: {
+      ref?: any;
+      value?: any;
+      error?: { message?: string };
+    };
+    emailAddress: {
+      ref?: any;
+      value?: any;
+      error?: { message?: string };
+    };
+    password: {
+      ref?: any;
+      value?: any;
+      error?: { message?: string };
+    };
+    confirmPassword: {
+      ref?: any;
+      value?: any;
+      error?: { message?: string };
+    };
+  };
   // eslint-disable-next-line @typescript-eslint/ban-types
-  onFormSubmit?:(formData: RegisterDialogFormInterface, formReset: Function) => void;
-  onErrorClose?: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
+  onSubmit?:(formData: RegisterDialogFormInterface) => void;
+  onClose?: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
 }
 
 /**
@@ -80,44 +68,19 @@ export function RegisterDialog(props: RegisterDialogPropsInterface): JSX.Element
   const {
     open,
     loading,
-    error,
-    disableBackdropClick,
-    disableEscapeKeyDown,
-    onDialogClose,
-    onFormSubmit,
-    onErrorClose,
+    form,
+    onClose,
+    onSubmit,
   } = props;
   // styles
   const registerDialogStyles = useRegisterDialogStyles();
-  // set up form
-  const {
-    register,
-    handleSubmit,
-    errors,
-    reset,
-  } = useForm<RegisterDialogFormInterface>({
-    resolver: yupResolver(registerDialogFormSchema),
-  });
-  // handle form submit
-  const onSubmit = async (data: any) => {
-    // call user provided on submit func
-    await (onFormSubmit as any)(data, reset.bind({
-      firstName: '',
-      lastName: '',
-      emailAddress: '',
-      password: '',
-      confirmPassword: '',
-    }));
-    // return explicitly
-    return;
-  };
   // render component
   return (
     <>
       <Dialog
         scroll="body"
         open={open}
-        onClose={onDialogClose}
+        onClose={onClose}
         disableBackdropClick={loading}
         disableEscapeKeyDown={loading}
         style={{
@@ -125,7 +88,7 @@ export function RegisterDialog(props: RegisterDialogPropsInterface): JSX.Element
           overflowY: 'hidden',
         }}
       >
-        <Dialog
+        {/* <Dialog
           scroll="body"
           open={error && error !== '' ? error as any : false}
           onClose={onErrorClose}
@@ -145,18 +108,18 @@ export function RegisterDialog(props: RegisterDialogPropsInterface): JSX.Element
           } as any}
         >
           {error}
-        </Dialog>
+        </Dialog> */}
         <form
           noValidate
-          onSubmit={handleSubmit(onSubmit)}
+          onSubmit={onSubmit as any}
         >
           <DialogTitle>
             <Box display="flex" justifyContent="space-between">
               <Typography variant="h5">Register</Typography>
               <IconButton
                 className={registerDialogStyles.dialogTitleCloseButton}
-                onClick={onDialogClose}
-                disabled={disableBackdropClick || disableEscapeKeyDown}
+                onClick={onClose}
+                disabled={loading}
                 aria-label="Close"
               >
                 <CloseIcon />
@@ -172,9 +135,10 @@ export function RegisterDialog(props: RegisterDialogPropsInterface): JSX.Element
               variant="outlined"
               label="First Name"
               name="firstName"
-              inputRef={register}
-              error={!!errors.firstName}
-              helperText={errors.firstName ? `${capitalize(errors.firstName.message?.replace(/"/g, ''))}.` : ''}
+              value={form.firstName.value}
+              inputRef={form.firstName.ref}
+              error={!!form.firstName.error}
+              helperText={form.firstName.error?.message}
             />
             <TextField
               className={registerDialogStyles.dialogContentInput}
@@ -183,9 +147,10 @@ export function RegisterDialog(props: RegisterDialogPropsInterface): JSX.Element
               variant="outlined"
               label="Last Name"
               name="lastName"
-              inputRef={register}
-              error={!!errors.lastName}
-              helperText={errors.lastName ? `${capitalize(errors.lastName.message?.replace(/"/g, ''))}.` : ''}
+              value={form.lastName.value}
+              inputRef={form.lastName.ref}
+              error={!!form.lastName.error}
+              helperText={form.lastName.error?.message}
             />
             <TextField
               className={registerDialogStyles.dialogContentInput}
@@ -194,9 +159,10 @@ export function RegisterDialog(props: RegisterDialogPropsInterface): JSX.Element
               variant="outlined"
               label="Email Address"
               name="emailAddress"
-              inputRef={register}
-              error={!!errors.emailAddress}
-              helperText={errors.emailAddress ? `${capitalize(errors.emailAddress.message?.replace(/"/g, ''))}.` : ''}
+              value={form.emailAddress.value}
+              inputRef={form.emailAddress.ref}
+              error={!!form.emailAddress.error}
+              helperText={form.emailAddress.error?.message}
             />
             <TextField
               className={registerDialogStyles.dialogContentInput}
@@ -205,9 +171,10 @@ export function RegisterDialog(props: RegisterDialogPropsInterface): JSX.Element
               variant="outlined"
               label="Password"
               name="password"
-              inputRef={register}
-              error={!!errors.password}
-              helperText={errors.password ? `${capitalize(errors.password.message?.replace(/"/g, ''))}.` : ''}
+              value={form.password.value}
+              inputRef={form.password.ref}
+              error={!!form.password.error}
+              helperText={form.password.error?.message}
             />
             <TextField
               className={registerDialogStyles.dialogContentInput}
@@ -216,9 +183,10 @@ export function RegisterDialog(props: RegisterDialogPropsInterface): JSX.Element
               variant="outlined"
               label="Confirm Password"
               name="confirmPassword"
-              inputRef={register}
-              error={!!errors.confirmPassword}
-              helperText={errors.confirmPassword ? `${capitalize(errors.confirmPassword.message?.replace(/"/g, ''))}.` : ''}
+              value={form.confirmPassword.value}
+              inputRef={form.confirmPassword.ref}
+              error={!!form.confirmPassword.error}
+              helperText={form.confirmPassword.error?.message}
             />
           </DialogContent>
           <DialogActions

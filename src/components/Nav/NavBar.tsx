@@ -1,18 +1,46 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 import {
   AppBar, Button, IconButton, Toolbar,
 } from '@material-ui/core';
 import React from 'react';
 import { Link } from 'react-router-dom';
-// import { DialogTitleWithCloseIcon } from '../Dialog/DialogWithCloseIcon';
-// import { useFormDialogStyles } from './Dialog.styles';
+import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers';
 import MenuIcon from '@material-ui/icons/Menu';
+import * as yup from 'yup';
 import { RegisterDialog, RegisterDialogFormInterface } from '../Register/RegisterDialog';
 import { useStoreActions, useStoreState } from '../../lib/hooks';
-/**
- * A Wrapper around the Dialog component to create centered
- * Login, Register or other Dialogs.
- */
+
+const registerDialogFormSchema: yup.ObjectSchema<RegisterDialogFormInterface | undefined> = yup.object().shape({
+  firstName: yup
+    .string()
+    .label('First Name')
+    .required(),
+  lastName: yup
+    .string()
+    .label('Last Name')
+    .required(),
+  emailAddress: yup
+    .string()
+    .label('Email')
+    .email()
+    .required(),
+  password: yup
+    .string()
+    .label('Password')
+    .required()
+    .min(2)
+    .max(16),
+  confirmPassword: yup
+    .string()
+    .required('Please confirm your password.')
+    .label('Confirm password')
+    .test('passwords-match', 'Passwords must match.', function (value) {
+      return this.parent.password === value;
+    }),
+});
+
 export function NavBar(): JSX.Element {
   // ui store specific
   const uiState = useStoreState((state) => state.ui);
@@ -20,6 +48,15 @@ export function NavBar(): JSX.Element {
   // user store specific
   const userState = useStoreState((state) => state.user);
   const userActions = useStoreActions((state) => state.user);
+  // forms
+  const {
+    register,
+    handleSubmit,
+    errors,
+    reset,
+  } = useForm<RegisterDialogFormInterface>({
+    resolver: yupResolver(registerDialogFormSchema),
+  });
   // render component
   return (
     <>
@@ -42,21 +79,44 @@ export function NavBar(): JSX.Element {
       <RegisterDialog
         open={uiState.isRegisterDialogOpen}
         loading={userState.isRegisteringUser}
-        error={userState.registerUserErrorMessage}
-        onFormSubmit={async (userInformation: RegisterDialogFormInterface, formReset) => {
+        form={{
+          firstName: {
+            ref: register,
+            error: errors.firstName,
+          },
+          lastName: {
+            ref: register,
+            error: errors.lastName,
+          },
+          emailAddress: {
+            ref: register,
+            error: errors.emailAddress,
+          },
+          password: {
+            ref: register,
+            error: errors.password,
+          },
+          confirmPassword: {
+            ref: register,
+            error: errors.confirmPassword,
+          },
+        }}
+        onSubmit={handleSubmit(async (userInformation: RegisterDialogFormInterface) => {
           await userActions.registerUser({
             ...userInformation,
           });
-          formReset();
-          // if (userState.hasRegisterUserError) return;
-          // formReset();
-        }}
-        onDialogClose={() => {
+          if (userState.hasRegisterUserError) return;
+          reset({
+            firstName: '',
+            lastName: '',
+            emailAddress: '',
+            password: '',
+            confirmPassword: '',
+          });
+        }) as any}
+        onClose={() => {
           if (userState.isRegisteringUser) return;
           uiActions.setIsRegisterDialogOpen(false);
-        }}
-        onErrorClose={() => {
-          userActions.setRegisterUserError(undefined);
         }}
       />
     </>

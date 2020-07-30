@@ -34,9 +34,7 @@ export const userStore: UserStoreInterface = {
   isRegisteringUser: false,
   isLoggedIn: computed((state) => state.jwt !== undefined && state.jwt !== ''),
   hasRegisterUserError: computed((state) => state.registerUserError !== undefined),
-  registerUserErrorMessage: computed((state) => {
-    return state.registerUserError?.message || ''
-  }),
+  registerUserErrorMessage: computed((state) => state.registerUserError?.message || ''),
   setJwt: action((state, jwt) => {
     state.jwt = jwt;
   }),
