@@ -1,53 +1,91 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 // node_modules
 import {
   Box,
-  Checkbox, Container, FormControlLabel, FormHelperText, TextField, IconButton, Typography, Dialog, DialogTitle, DialogContent, DialogActions, Button,
+  TextField, IconButton, Typography, Dialog, DialogTitle, DialogContent, DialogActions, Button, Collapse,
 } from '@material-ui/core';
+import Alert from '@material-ui/lab/Alert';
 import CloseIcon from '@material-ui/icons/Close';
 import React from 'react';
 import { useForm } from 'react-hook-form';
-import Joi from '@hapi/joi';
-import { joiResolver } from '@hookform/resolvers';
-import { capitalize, get } from 'lodash';
+import { yupResolver } from '@hookform/resolvers';
+import { capitalize } from 'lodash';
+import * as yup from 'yup';
 
 // components
 
 // styles
 import { useRegisterDialogStyles } from './RegisterDialog.styles';
+import { useStoreActions, useStoreState } from '../../lib/hooks';
 
 // form
-const registartionFormSchema = Joi.object({
-  emailAddress: Joi.string().trim().min(1).max(150)
+export interface RegisterDialogFormInterface {
+  firstName: string;
+  lastName: string;
+  emailAddress: string;
+  password: string;
+  confirmPassword: string;
+}
+
+const registerDialogFormSchema: yup.ObjectSchema<RegisterDialogFormInterface | undefined> = yup.object().shape({
+  firstName: yup
+    .string()
+    .label('First Name')
     .required(),
-  password: Joi.string().trim().min(1).max(150)
+  lastName: yup
+    .string()
+    .label('Last Name')
     .required(),
-  repeatedPassword: Joi.string().trim().min(1).max(150)
+  emailAddress: yup
+    .string()
+    .label('Email')
+    .email()
     .required(),
+  password: yup
+    .string()
+    .label('Password')
+    .required()
+    .min(2)
+    .max(16),
+  confirmPassword: yup
+    .string()
+    .required('Please confirm your password.')
+    .label('Confirm password')
+    .test('passwords-match', 'Passwords must match.', function (value) {
+      return this.parent.password === value;
+    }),
 });
+
+export interface RegisterDialogPropsInterface {
+  open: boolean;
+  loading?: boolean
+  error?: string;
+  disableBackdropClick?: boolean;
+  disableEscapeKeyDown?: boolean;
+  hideBackdrop?: boolean
+  onDialogClose?: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  onFormSubmit?:(formData: RegisterDialogFormInterface, formReset: Function) => void;
+  onErrorClose?: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
+}
 
 /**
  * A Wrapper around the Dialog component to create centered
  * Login, Register or other Dialogs.
  */
-export function RegisterDialog(props: {
-  open: boolean;
-  disableBackdropClick?: boolean;
-  disableEscapeKeyDown?: boolean;
-  hideBackdrop?: boolean
-  onClose?: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
-  classes?: {
-    dialog: { [key: string]: any; };
-    dialogTitle: { [key: string]: any; };
-  };
-}): JSX.Element {
+export function RegisterDialog(props: RegisterDialogPropsInterface): JSX.Element {
   // deconstruct for ease
   const {
     open,
+    loading,
+    error,
     disableBackdropClick,
     disableEscapeKeyDown,
-    hideBackdrop,
-    onClose,
-    classes,
+    onDialogClose,
+    onFormSubmit,
+    onErrorClose,
   } = props;
   // styles
   const registerDialogStyles = useRegisterDialogStyles();
@@ -57,28 +95,57 @@ export function RegisterDialog(props: {
     handleSubmit,
     errors,
     reset,
-  } = useForm<{ emailAddress: string; password: string; repeatedPassword: string; }>({
-    resolver: joiResolver(registartionFormSchema),
+  } = useForm<RegisterDialogFormInterface>({
+    resolver: yupResolver(registerDialogFormSchema),
   });
-  // on submit for form
-  const onSubmit = (data: any): void => {
-    console.log(data);
-    reset({
+  // handle form submit
+  const onSubmit = async (data: any) => {
+    // call user provided on submit func
+    await (onFormSubmit as any)(data, reset.bind({
+      firstName: '',
+      lastName: '',
       emailAddress: '',
       password: '',
-      repeatedPassword: '',
-    });
+      confirmPassword: '',
+    }));
+    // return explicitly
+    return;
   };
   // render component
   return (
     <>
       <Dialog
+        scroll="body"
         open={open}
-        onClose={onClose}
-        disableBackdropClick={disableBackdropClick}
-        disableEscapeKeyDown={disableEscapeKeyDown}
-        hideBackdrop={hideBackdrop}
+        onClose={onDialogClose}
+        disableBackdropClick={loading}
+        disableEscapeKeyDown={loading}
+        style={{
+          overflowX: 'auto',
+          overflowY: 'hidden',
+        }}
       >
+        <Dialog
+          scroll="body"
+          open={error && error !== '' ? error as any : false}
+          onClose={onErrorClose}
+          PaperComponent={Alert as any}
+          PaperProps={{
+            color: 'error',
+            action: (
+              <IconButton
+                aria-label="close"
+                color="inherit"
+                size="small"
+                onClick={onErrorClose}
+              >
+                <CloseIcon fontSize="inherit" />
+              </IconButton>
+            ),
+          } as any}
+        >
+          {error}
+        </Dialog>
         <form
           noValidate
           onSubmit={handleSubmit(onSubmit)}
@@ -88,7 +155,7 @@ export function RegisterDialog(props: {
               <Typography variant="h5">Register</Typography>
               <IconButton
                 className={registerDialogStyles.dialogTitleCloseButton}
-                onClick={onClose}
+                onClick={onDialogClose}
                 disabled={disableBackdropClick || disableEscapeKeyDown}
                 aria-label="Close"
               >
@@ -103,6 +170,28 @@ export function RegisterDialog(props: {
               autoComplete="off"
               fullWidth
               variant="outlined"
+              label="First Name"
+              name="firstName"
+              inputRef={register}
+              error={!!errors.firstName}
+              helperText={errors.firstName ? `${capitalize(errors.firstName.message?.replace(/"/g, ''))}.` : ''}
+            />
+            <TextField
+              className={registerDialogStyles.dialogContentInput}
+              autoComplete="off"
+              fullWidth
+              variant="outlined"
+              label="Last Name"
+              name="lastName"
+              inputRef={register}
+              error={!!errors.lastName}
+              helperText={errors.lastName ? `${capitalize(errors.lastName.message?.replace(/"/g, ''))}.` : ''}
+            />
+            <TextField
+              className={registerDialogStyles.dialogContentInput}
+              autoComplete="off"
+              fullWidth
+              variant="outlined"
               label="Email Address"
               name="emailAddress"
               inputRef={register}
@@ -111,7 +200,6 @@ export function RegisterDialog(props: {
             />
             <TextField
               className={registerDialogStyles.dialogContentInput}
-              autoFocus
               autoComplete="off"
               fullWidth
               variant="outlined"
@@ -123,15 +211,14 @@ export function RegisterDialog(props: {
             />
             <TextField
               className={registerDialogStyles.dialogContentInput}
-              autoFocus
               autoComplete="off"
               fullWidth
               variant="outlined"
-              label="Repeat Password"
-              name="repeatedPassword"
+              label="Confirm Password"
+              name="confirmPassword"
               inputRef={register}
-              error={!!errors.repeatedPassword}
-              helperText={errors.repeatedPassword ? `${capitalize(errors.repeatedPassword.message?.replace(/"/g, ''))}.` : ''}
+              error={!!errors.confirmPassword}
+              helperText={errors.confirmPassword ? `${capitalize(errors.confirmPassword.message?.replace(/"/g, ''))}.` : ''}
             />
           </DialogContent>
           <DialogActions
@@ -143,6 +230,7 @@ export function RegisterDialog(props: {
               variant="contained"
               size="large"
               type="submit"
+              disabled={loading}
             >
               Register
             </Button>
@@ -150,175 +238,5 @@ export function RegisterDialog(props: {
         </form>
       </Dialog>
     </>
-    // <Dialog
-    //   open={open}
-    //   disableBackdropClick={disableBackdropClick}
-    //   disableEscapeKeyDown={disableEscapeKeyDown}
-    //   hideBackdrop={hideBackdrop}
-    //   onClose={onClose}
-    //   title="Register"
-    //   classes={{
-    //     dialogPaper: registerDialogStyles.dialogPaper,
-    //     dialogPaperScrollPaper: registerDialogStyles.dialogPaperScrollPaper,
-    //   }}
-    //   body={(
-    //     <form
-    //       noValidate
-    //       onSubmit={handleSubmit(onSubmit)}
-    //       >
-    //       <TextField
-    //         style={{
-    //           width: '400px',
-    //         }}
-    //         autoFocus
-    //         autoComplete="off"
-    //         fullWidth
-    //         variant="outlined"
-    //         label="Email Address"
-    //         name="emailAddress"
-    //         inputRef={register}
-    //         error={!!errors.emailAddress}
-    //         helperText={errors.emailAddress ? `${capitalize(errors.emailAddress.message?.replace(/"/g, ''))}.` : ''}
-    //       />
-    //       {/* <TextField
-    //         variant="outlined"
-    //         margin="normal"
-    //         required
-    //         fullWidth
-    //         error={status === 'invalidEmail'}
-    //         label="Email Address"
-    //         autoFocus
-    //         autoComplete="off"
-    //         type="email"
-    //         onChange={() => {
-    //           if (status === 'invalidEmail') {
-    //             setStatus(null);
-    //           }
-    //         }}
-    //         FormHelperTextProps={{ error: true }}
-    //       />
-    //       <VisibilityPasswordTextField
-    //         variant="outlined"
-    //         margin="normal"
-    //         required
-    //         fullWidth
-    //         error={
-    //           status === 'passwordTooShort' || status === 'passwordsDontMatch'
-    //         }
-    //         label="Password"
-    //         inputRef={registerPassword}
-    //         autoComplete="off"
-    //         onChange={() => {
-    //           if (
-    //             status === 'passwordTooShort'
-    //             || status === 'passwordsDontMatch'
-    //           ) {
-    //             setStatus(null);
-    //           }
-    //         }}
-    //         helperText={(() => {
-    //           if (status === 'passwordTooShort') {
-    //             return 'Create a password at least 6 characters long.';
-    //           }
-    //           if (status === 'passwordsDontMatch') {
-    //             return 'Your passwords dont match.';
-    //           }
-    //           return null;
-    //         })()}
-    //         FormHelperTextProps={{ error: true }}
-    //         isVisible={isPasswordVisible}
-    //         onVisibilityChange={setIsPasswordVisible}
-    //       />
-    //       <VisibilityPasswordTextField
-    //         variant="outlined"
-    //         margin="normal"
-    //         required
-    //         fullWidth
-    //         error={
-    //           status === 'passwordTooShort' || status === 'passwordsDontMatch'
-    //         }
-    //         label="Repeat Password"
-    //         inputRef={registerPasswordRepeat}
-    //         autoComplete="off"
-    //         onChange={() => {
-    //           if (
-    //             status === 'passwordTooShort'
-    //             || status === 'passwordsDontMatch'
-    //           ) {
-    //             setStatus(null);
-    //           }
-    //         }}
-    //         helperText={(() => {
-    //           if (status === 'passwordTooShort') {
-    //             return 'Create a password at least 6 characters long.';
-    //           }
-    //           if (status === 'passwordsDontMatch') {
-    //             return 'Your passwords dont match.';
-    //           }
-    //         })()}
-    //         FormHelperTextProps={{ error: true }}
-    //         isVisible={isPasswordVisible}
-    //         onVisibilityChange={setIsPasswordVisible}
-    //       />
-    //       <FormControlLabel
-    //         style={{ marginRight: 0 }}
-    //         control={(
-    //           <Checkbox
-    //             color="primary"
-    //             inputRef={registerTermsCheckbox}
-    //             onChange={() => {
-    //               setHasTermsOfServiceError(false);
-    //             }}
-    //           />
-    //         )}
-    //         label={(
-    //           <Typography variant="body1">
-    //             I agree to the
-    //             <span
-    //               className={classes.link}
-    //               onClick={isLoading ? null : openTermsDialog}
-    //               tabIndex={0}
-    //               role="button"
-    //               onKeyDown={(event) => {
-    //                 // For screenreaders listen to space and enter events
-    //                 if (
-    //                   (!isLoading && event.keyCode === 13)
-    //                   || event.keyCode === 32
-    //                 ) {
-    //                   openTermsDialog();
-    //                 }
-    //               }}
-    //             >
-    //               {' '}
-    //               terms of service
-    //             </span>
-    //           </Typography>
-    //         )}
-    //       />
-    //       {hasTermsOfServiceError && (
-    //         <FormHelperText
-    //           error
-    //           style={{
-    //             display: 'block',
-    //             marginTop: theme.spacing(-1),
-    //           }}
-    //         >
-    //           In order to create an account, you have to accept our terms of
-    //           service.
-    //         </FormHelperText>
-    //       )}
-    //       {status === 'accountCreated' ? (
-    //         <HighlightedInformation>
-    //           We have created your account. Please click on the link in the
-    //           email we have sent to you before logging in.
-    //         </HighlightedInformation>
-    //       ) : (
-    //         <HighlightedInformation>
-    //           Registration is disabled until we go live.
-    //         </HighlightedInformation>
-    //       )} */}
-    //     </form>
-    //   )}
-    // />
   );
 }

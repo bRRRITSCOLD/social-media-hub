@@ -37,6 +37,8 @@ module.exports = {
     "react/jsx-closing-bracket-location": [0],
     "max-len": [0],
     'react/require-default-props': [0],
+    'curly': [0],
+    'no-useless-return': [0],
   },
   settings: {
     react: {

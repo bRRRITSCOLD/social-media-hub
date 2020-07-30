@@ -2,8 +2,6 @@
 import { Box, Button, TextField } from '@material-ui/core';
 import React from 'react';
 import { useForm } from 'react-hook-form';
-import Joi from '@hapi/joi';
-import { joiResolver } from '@hookform/resolvers';
 import capitalize from 'lodash/capitalize';
 
 // styles
@@ -14,12 +12,6 @@ import { useStoreActions } from '../../../lib/hooks';
 
 // models
 
-// form
-const formSchema = Joi.object({
-  body: Joi.string().trim().min(1).max(150)
-    .required(),
-});
-
 const TwitterPostForm: React.FC<any> = () => {
   const classes = useTwitterPostFormStyles();
   const {
@@ -27,9 +19,7 @@ const TwitterPostForm: React.FC<any> = () => {
     handleSubmit,
     errors,
     reset,
-  } = useForm<{ body: string }>({
-    resolver: joiResolver(formSchema),
-  });
+  } = useForm<{ body: string }>();
   const twitterActions = useStoreActions((state) => state.twitter);
   const onSubmit = async (data: any): Promise<void> => {
     await twitterActions.postPost(data);

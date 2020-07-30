@@ -15,10 +15,7 @@ import { socialMediaHubApiClient } from '../lib/http';
 
 export interface UIStoreInterface {
   isRegisterDialogOpen: boolean;
-  isRegisteringUser: boolean;
   setIsRegisterDialogOpen: Action<UIStoreInterface, boolean>;
-  setIsRegisteringUser: Action<UIStoreInterface, boolean>;
-  registerUser: Thunk<UIStoreInterface, any>;
   // addPost: Action<TwitterStoreInterface, TwitterPostInterface>;
   // getPosts: Thunk<TwitterStoreInterface>;
   // postPost: Thunk<TwitterStoreInterface, TwitterPostInterface>;
@@ -29,28 +26,8 @@ export interface UIStoreInterface {
 
 export const uiStore: UIStoreInterface = {
   isRegisterDialogOpen: false,
-  isRegisteringUser: false,
   setIsRegisterDialogOpen: action((state, isRegisterDialogOpen) => {
     state.isRegisterDialogOpen = isRegisterDialogOpen;
-  }),
-  setIsRegisteringUser: action((state, isRegisterDialogOpen) => {
-    state.isRegisterDialogOpen = isRegisterDialogOpen;
-  }),
-  registerUser: thunk(async (state, post) => {
-    try {
-      const newPost = {
-        ...post,
-        createdDate: get(post, 'createdDate', new Date().toISOString()),
-      };
-      const postPostResponse = await socialMediaHubApiClient({
-        method: 'POST',
-        url: '/posts',
-        headers: { 'content-type': 'application/json' },
-        data: newPost,
-      });
-    } catch (err) {
-      console.log(err);
-    }
   }),
   // setPosts: action((state, posts) => {
   //   state.posts = posts;
