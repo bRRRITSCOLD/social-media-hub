@@ -9,11 +9,11 @@ import {
 } from 'easy-peasy';
 
 // libraries
+import { get } from 'lodash';
 import { socialMediaHubApiClient } from '../lib/http';
 
 // models
 import { RegisterDialogFormInterface } from '../components/Register/RegisterDialog';
-import { get } from 'lodash';
 
 export interface UserStoreInterface {
   jwt: string;
