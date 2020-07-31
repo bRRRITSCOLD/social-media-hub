@@ -16,12 +16,12 @@
     "@types/react-dom": "^16.9.8",
     "axios": "^0.19.2",
     "easy-peasy": "^3.3.1",
+    "jwt-decode": "^2.2.0",
     "lodash": "^4.17.19",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-hook-form": "^6.0.8",
     "react-router-dom": "^5.2.0",
-    "react-router-guards": "^1.0.2",
     "react-scripts": "3.4.1",
     "typescript": "~3.7.2",
     "yup": "^0.29.2"
@@ -49,6 +49,7 @@
   },
   "devDependencies": {
     "@types/axios": "^0.14.0",
+    "@types/jwt-decode": "^2.2.1",
     "@types/lodash": "^4.14.157",
     "@types/react-router-dom": "^5.1.5",
     "@types/yup": "^0.29.3",

@@ -3,27 +3,23 @@
 // node_modules
 import React, { Suspense, lazy } from 'react';
 import {
-  Redirect, Switch,
+  Redirect, Switch, Route,
 } from 'react-router-dom';
-import { GuardProvider, GuardedRoute } from 'react-router-guards';
 import Container from '@material-ui/core/Container';
+
+// libraries
+import { useStoreState } from './lib/hooks';
+import * as guards from './lib/guards';
 
 // styles
 
-// pages
+// components
 import { NavBar } from './components/Nav/NavBar';
-import { useStoreState } from './lib/hooks';
 
+// pages
+const About = lazy(() => import('./pages/About'));
 const Home = lazy(() => import('./pages/Home'));
 const TwitterOAuthCallback = lazy(() => import('./pages/Twitter/TwitterOAuthCallback'));
-
-const requireLogin = (to: any, from: any, next: any) => {
-  if (to.meta.jwt) {
-    next();
-  } else {
-    next.redirect('/');
-  }
-};
 
 const App: React.FC = () => {
   // user store specific
@@ -34,16 +30,32 @@ const App: React.FC = () => {
       <NavBar />
       <Container maxWidth="md">
         <Suspense fallback={<></>}>
-          <GuardProvider guards={[requireLogin as any]}>
-            <Switch>
-              <GuardedRoute exact path="/" component={Home} />
-              <GuardedRoute exact path="/about" meta={{ jwt: userState.session.jwt }}>
-                <h1>About Page</h1>
-              </GuardedRoute>
-              <GuardedRoute exact path="/twitter/oauth/callback" component={TwitterOAuthCallback} />
-              <Redirect to="/" />
-            </Switch>
-          </GuardProvider>
+          <Switch>
+            <Route exact path="/" component={Home} />
+            {
+              !userState.isLoggedIn || guards.roles(userState.decodedJwt?.roles, guards.ABOUT_PAGE_ROLES)
+                ? ''
+                : (
+                  <Route
+                    exact
+                    path="/about"
+                    component={About}
+                  />
+                )
+            }
+            {
+              !userState.isLoggedIn || guards.roles(userState.decodedJwt?.roles, guards.TWITTER_PAGE_ROLES)
+                ? ''
+                : (
+                  <Route
+                    exact
+                    path="/twitter/oauth/callback"
+                    component={TwitterOAuthCallback}
+                  />
+                )
+            }
+            <Redirect to="/" />
+          </Switch>
         </Suspense>
       </Container>
     </div>

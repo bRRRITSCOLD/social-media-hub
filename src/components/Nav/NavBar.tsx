@@ -18,6 +18,7 @@ import { LoginDialog, LoginDialogFormInterface } from '../Login/LoginDialog';
 
 // libraries
 import { useStoreActions, useStoreState } from '../../lib/hooks';
+import * as guards from '../../lib/guards';
 
 const registerDialogFormSchema: yup.ObjectSchema<RegisterDialogFormInterface | undefined> = yup.object().shape({
   firstName: yup
@@ -132,120 +133,150 @@ export function NavBar(): JSX.Element {
           <Button component={Link} to="/" color="inherit">
             Home
           </Button>
-          <Button component={Link} to="/about" color="inherit">
-            About
-          </Button>
-          <Button
-            onClick={() => {
-              // open the register dialog
-              uiActions.setIsRegisterDialogOpen(true);
-            }}
-            color="inherit">
-            Register
-          </Button>
-          <Button
-            onClick={() => {
-              // open the register dialog
-              uiActions.setIsLoginDialogOpen(true);
-            }}
-            color="inherit">
-            Login
-          </Button>
+          {
+            !userState.isLoggedIn && !guards.roles(userState.decodedJwt?.roles, guards.ABOUT_PAGE_ROLES)
+              ? ''
+              : (
+                <Button component={Link} to="/about" color="inherit">
+                  About
+                </Button>
+              )
+          }
+          {
+            userState.isLoggedIn
+              ? ''
+              : (
+                <Button
+                  onClick={() => {
+                    // open the register dialog
+                    uiActions.setIsRegisterDialogOpen(true);
+                  }}
+                  color="inherit">
+                  Register
+                </Button>
+              )
+          }
+          {
+            userState.isLoggedIn
+              ? ''
+              : (
+                <Button
+                  onClick={() => {
+                    // open the register dialog
+                    uiActions.setIsLoginDialogOpen(true);
+                  }}
+                  color="inherit">
+                  Login
+                </Button>
+              )
+          }
         </Toolbar>
       </AppBar>
-      <RegisterDialog
-        open={uiState.isRegisterDialogOpen}
-        loading={userState.isRegisteringUser}
-        form={{
-          firstName: {
-            ref: registerFormRegister,
-            error: registerFormErrors.firstName,
-          },
-          lastName: {
-            ref: registerFormRegister,
-            error: registerFormErrors.lastName,
-          },
-          emailAddress: {
-            ref: registerFormRegister,
-            error: registerFormErrors.emailAddress,
-          },
-          password: {
-            ref: registerFormRegister,
-            error: registerFormErrors.password,
-          },
-          confirmPassword: {
-            ref: registerFormRegister,
-            error: registerFormErrors.confirmPassword,
-          },
-        }}
-        onSubmit={registerFormHandleSubmit(async (registerDialogForm: RegisterDialogFormInterface) => {
-          // call api to register use
-          await userActions.registerUser({
-            ...registerDialogForm,
-          });
-          // if there is an error after
-          // trying to register user then
-          // return now
-          if (userState.hasRegisterUserError) return;
-          // reset form if registration was successful
-          registerFormReset({
-            firstName: '',
-            lastName: '',
-            emailAddress: '',
-            password: '',
-            confirmPassword: '',
-          });
-          // close the register dialog since
-          // registration was successful
-          uiActions.setIsRegisterDialogOpen(false);
-        }) as any}
-        onClose={() => {
-          // if we are rgistering a user
-          // do not allow closing of the dialog
-          if (userState.isRegisteringUser) return;
-          // close dialog if we are not reisgtering a user
-          uiActions.setIsRegisterDialogOpen(false);
-        }}
-      />
-      <LoginDialog
-        open={uiState.isLoginDialogOpen}
-        loading={userState.isLoggingInUser}
-        form={{
-          emailAddress: {
-            ref: loginFormRegister,
-            error: loginFormErrors.emailAddress,
-          },
-          password: {
-            ref: loginFormRegister,
-            error: loginFormErrors.password,
-          },
-        }}
-        onSubmit={loginFormHandleSubmit(async (loginDialogForm: LoginDialogFormInterface) => {
-          // call api to register use
-          await userActions.loginUser({
-            ...loginDialogForm,
-          });
-          // if there is an error after
-          // trying to register user then
-          // return now
-          if (userState.hasLoginUserError) return;
-          // reset form if registration was successful
-          loginFormReset({
-            emailAddress: '',
-            password: '',
-          });
-          // close the register dialog since
-          // registration was successful
-          uiActions.setIsLoginDialogOpen(false);
-        }) as any}
-        onClose={() => {
-          // if we are rgistering a user
-          // do not allow closing of the dialog
-          if (userState.isRegisteringUser) return;
-          // close dialog if we are not reisgtering a user
-          uiActions.setIsLoginDialogOpen(false);
-        }}
-      />
+      {
+        userState.isLoggedIn
+          ? ''
+          : (
+            <RegisterDialog
+              open={uiState.isRegisterDialogOpen}
+              loading={userState.isRegisteringUser}
+              form={{
+                firstName: {
+                  ref: registerFormRegister,
+                  error: registerFormErrors.firstName,
+                },
+                lastName: {
+                  ref: registerFormRegister,
+                  error: registerFormErrors.lastName,
+                },
+                emailAddress: {
+                  ref: registerFormRegister,
+                  error: registerFormErrors.emailAddress,
+                },
+                password: {
+                  ref: registerFormRegister,
+                  error: registerFormErrors.password,
+                },
+                confirmPassword: {
+                  ref: registerFormRegister,
+                  error: registerFormErrors.confirmPassword,
+                },
+              }}
+              onSubmit={registerFormHandleSubmit(async (registerDialogForm: RegisterDialogFormInterface) => {
+                // call api to register use
+                await userActions.registerUser({
+                  ...registerDialogForm,
+                });
+                // if there is an error after
+                // trying to register user then
+                // return now
+                if (userState.hasRegisterUserError) return;
+                // reset form if registration was successful
+                registerFormReset({
+                  firstName: '',
+                  lastName: '',
+                  emailAddress: '',
+                  password: '',
+                  confirmPassword: '',
+                });
+                // close the register dialog since
+                // registration was successful
+                uiActions.setIsRegisterDialogOpen(false);
+              }) as any}
+              onClose={() => {
+                // if we are rgistering a user
+                // do not allow closing of the dialog
+                if (userState.isRegisteringUser) return;
+                // close dialog if we are not reisgtering a user
+                uiActions.setIsRegisterDialogOpen(false);
+              }}
+            />
+          )
+      }
+      {
+        userState.isLoggedIn
+          ? ''
+          : (
+            <LoginDialog
+              open={uiState.isLoginDialogOpen}
+              loading={userState.isLoggingInUser}
+              form={{
+                emailAddress: {
+                  ref: loginFormRegister,
+                  error: loginFormErrors.emailAddress,
+                },
+                password: {
+                  ref: loginFormRegister,
+                  error: loginFormErrors.password,
+                },
+              }}
+              onSubmit={loginFormHandleSubmit(async (loginDialogForm: LoginDialogFormInterface) => {
+                // call api to register use
+                await userActions.loginUser({
+                  ...loginDialogForm,
+                });
+                // if there is an error after
+                // trying to register user then
+                // return now
+                if (userState.hasLoginUserError) return;
+                // reset form if registration was successful
+                loginFormReset({
+                  emailAddress: '',
+                  password: '',
+                });
+                // close the register dialog since
+                // registration was successful
+                uiActions.setIsLoginDialogOpen(false);
+              }) as any}
+              onClose={() => {
+                // if we are rgistering a user
+                // do not allow closing of the dialog
+                if (userState.isRegisteringUser) return;
+                // close dialog if we are not reisgtering a user
+                uiActions.setIsLoginDialogOpen(false);
+              }}
+            />
+          )
+      }
     </>
   );
 }

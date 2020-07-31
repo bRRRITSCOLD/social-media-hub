@@ -8,6 +8,7 @@ import {
   thunk,
   Thunk,
 } from 'easy-peasy';
+import jwtDecode from 'jwt-decode';
 
 // libraries
 import { get } from 'lodash';
@@ -30,6 +31,7 @@ export interface UserStoreInterface {
   isLoggedIn: Computed<UserStoreInterface, boolean>
   hasRegisterUserError: Computed<UserStoreInterface, boolean>
   hasLoginUserError: Computed<UserStoreInterface, boolean>
+  decodedJwt: Computed<UserStoreInterface, { [key: string]: any } | undefined>
   setSessionJwt: Action<UserStoreInterface, string>;
   setIsRegisteringUser: Action<UserStoreInterface, boolean>;
   setIsLoggingInUser: Action<UserStoreInterface, boolean>;
@@ -61,6 +63,11 @@ export const userStore: UserStoreInterface = {
   }),
   loginUserErrorMessage: computed((state) => {
     return state.loginUserError?.message || '';
+  }),
+  decodedJwt: computed((state) => {
+    return state.session.jwt !== undefined && state.session.jwt !== ''
+      ? jwtDecode(state.session.jwt)
+      : undefined;
   }),
   setSessionJwt: action((state, jwt) => {
     state.session.jwt = jwt;
