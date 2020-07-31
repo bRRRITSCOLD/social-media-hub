@@ -4,6 +4,7 @@ import {
   Action,
   computed,
   Computed,
+  persist,
   thunk,
   Thunk,
 } from 'easy-peasy';
@@ -17,7 +18,9 @@ import { RegisterDialogFormInterface } from '../components/Register/RegisterDial
 import { LoginDialogFormInterface } from '../components/Login/LoginDialog';
 
 export interface UserStoreInterface {
-  jwt: string;
+  session: {
+    jwt: string;
+  }
   registerUserError: Error | undefined;
   loginUserError: Error | undefined;
   registerUserErrorMessage: Computed<UserStoreInterface, string>
@@ -27,7 +30,7 @@ export interface UserStoreInterface {
   isLoggedIn: Computed<UserStoreInterface, boolean>
   hasRegisterUserError: Computed<UserStoreInterface, boolean>
   hasLoginUserError: Computed<UserStoreInterface, boolean>
-  setJwt: Action<UserStoreInterface, string>;
+  setSessionJwt: Action<UserStoreInterface, string>;
   setIsRegisteringUser: Action<UserStoreInterface, boolean>;
   setIsLoggingInUser: Action<UserStoreInterface, boolean>;
   setRegisterUserError: Action<UserStoreInterface, Error | undefined>;
@@ -37,13 +40,15 @@ export interface UserStoreInterface {
 }
 
 export const userStore: UserStoreInterface = {
-  jwt: '',
+  session: persist({
+    jwt: '',
+  }),
   registerUserError: undefined,
   loginUserError: undefined,
   isRegisteringUser: false,
   isLoggingInUser: false,
   isLoggedIn: computed((state) => {
-    return state.jwt !== undefined && state.jwt !== '';
+    return state.session.jwt !== undefined && state.session.jwt !== '';
   }),
   hasRegisterUserError: computed((state) => {
     return state.registerUserError !== undefined;
@@ -57,8 +62,8 @@ export const userStore: UserStoreInterface = {
   loginUserErrorMessage: computed((state) => {
     return state.loginUserError?.message || '';
   }),
-  setJwt: action((state, jwt) => {
-    state.jwt = jwt;
+  setSessionJwt: action((state, jwt) => {
+    state.session.jwt = jwt;
   }),
   setIsRegisteringUser: action((state, isRegisteringUser) => {
     state.isRegisteringUser = isRegisteringUser;
@@ -162,6 +167,8 @@ export const userStore: UserStoreInterface = {
         // build and throw error
         throw new Error(get(socialMediaHubApiClientResponse, 'data.errors[0].message', 'Unknown error.'));
       }
+      // set session jwt
+      actions.setSessionJwt((socialMediaHubApiClientResponse.data as { data: { loginUser: { jwt: string; }; }; }).data.loginUser.jwt);
       // indicate we are not regitering any more
       actions.setIsLoggingInUser(false);
       // return explicitly
