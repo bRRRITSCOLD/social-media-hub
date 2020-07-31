@@ -1,35 +1,49 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
 // node_modules
 import React, { Suspense, lazy } from 'react';
 import {
-  Redirect, Route, Switch,
+  Redirect, Switch,
 } from 'react-router-dom';
+import { GuardProvider, GuardedRoute } from 'react-router-guards';
 import Container from '@material-ui/core/Container';
 
 // styles
-import { useAppStyles } from './App.styles';
 
 // pages
 import { NavBar } from './components/Nav/NavBar';
+import { useStoreState } from './lib/hooks';
 
 const Home = lazy(() => import('./pages/Home'));
 const TwitterOAuthCallback = lazy(() => import('./pages/Twitter/TwitterOAuthCallback'));
 
-const App: React.FC = () => {
-  const classes = useAppStyles();
+const requireLogin = (to: any, from: any, next: any) => {
+  if (to.meta.jwt) {
+    next();
+  } else {
+    next.redirect('/');
+  }
+};
 
+const App: React.FC = () => {
+  // user store specific
+  const userState = useStoreState((store) => store.user);
+  // render app
   return (
     <div>
       <NavBar />
       <Container maxWidth="md">
         <Suspense fallback={<></>}>
-          <Switch>
-            <Route exact path="/" component={Home} />
-            <Route exact path="/about">
-              <h1>About Page</h1>
-            </Route>
-            <Route exact path="/twitter/oauth/callback" component={TwitterOAuthCallback} />
-            <Redirect to="/" />
-          </Switch>
+          <GuardProvider guards={[requireLogin as any]}>
+            <Switch>
+              <GuardedRoute exact path="/" component={Home} />
+              <GuardedRoute exact path="/about" meta={{ jwt: userState.session.jwt }}>
+                <h1>About Page</h1>
+              </GuardedRoute>
+              <GuardedRoute exact path="/twitter/oauth/callback" component={TwitterOAuthCallback} />
+              <Redirect to="/" />
+            </Switch>
+          </GuardProvider>
         </Suspense>
       </Container>
     </div>

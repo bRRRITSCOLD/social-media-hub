@@ -21,6 +21,7 @@
     "react-dom": "^16.13.1",
     "react-hook-form": "^6.0.8",
     "react-router-dom": "^5.2.0",
+    "react-router-guards": "^1.0.2",
     "react-scripts": "3.4.1",
     "typescript": "~3.7.2",
     "yup": "^0.29.2"
