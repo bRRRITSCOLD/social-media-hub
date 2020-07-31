@@ -14,6 +14,7 @@ import * as yup from 'yup';
 
 // components
 import { RegisterDialog, RegisterDialogFormInterface } from '../Register/RegisterDialog';
+import { LoginDialog, LoginDialogFormInterface } from '../Login/LoginDialog';
 
 // libraries
 import { useStoreActions, useStoreState } from '../../lib/hooks';
@@ -47,6 +48,20 @@ const registerDialogFormSchema: yup.ObjectSchema<RegisterDialogFormInterface | u
     }),
 });
 
+const loginDialogFormSchema: yup.ObjectSchema<LoginDialogFormInterface | undefined> = yup.object().shape({
+  emailAddress: yup
+    .string()
+    .label('Email')
+    .email()
+    .required(),
+  password: yup
+    .string()
+    .label('Password')
+    .required()
+    .min(2)
+    .max(16),
+});
+
 export function NavBar(): JSX.Element {
   // ui store specific
   const uiState = useStoreState((state) => state.ui);
@@ -54,14 +69,23 @@ export function NavBar(): JSX.Element {
   // user store specific
   const userState = useStoreState((state) => state.user);
   const userActions = useStoreActions((state) => state.user);
-  // forms
+  // register form
   const {
-    register,
-    handleSubmit,
-    errors,
-    reset,
+    register: registerFormRegister,
+    handleSubmit: registerFormHandleSubmit,
+    errors: registerFormErrors,
+    reset: registerFormReset,
   } = useForm<RegisterDialogFormInterface>({
     resolver: yupResolver(registerDialogFormSchema),
+  });
+  // login form
+  const {
+    register: loginFormRegister,
+    handleSubmit: loginFormHandleSubmit,
+    errors: loginFormErrors,
+    reset: loginFormReset,
+  } = useForm<LoginDialogFormInterface>({
+    resolver: yupResolver(loginDialogFormSchema),
   });
   // render component
   return (
@@ -78,6 +102,23 @@ export function NavBar(): JSX.Element {
             color="inherit"
             size="small"
             onClick={() => userActions.setRegisterUserError(undefined)}
+          >
+            <CloseIcon fontSize="inherit" />
+          </IconButton>
+        </Alert>
+      </Dialog>
+      <Dialog
+        scroll="body"
+        open={userState.hasLoginUserError}
+        onClose={() => userActions.setLoginUserError(undefined)}
+      >
+        <Alert color="error">
+          {userState.loginUserErrorMessage}
+          <IconButton
+            aria-label="close"
+            color="inherit"
+            size="small"
+            onClick={() => userActions.setLoginUserError(undefined)}
           >
             <CloseIcon fontSize="inherit" />
           </IconButton>
@@ -102,6 +143,14 @@ export function NavBar(): JSX.Element {
             color="inherit">
             Register
           </Button>
+          <Button
+            onClick={() => {
+              // open the register dialog
+              uiActions.setIsLoginDialogOpen(true);
+            }}
+            color="inherit">
+            Login
+          </Button>
         </Toolbar>
       </AppBar>
       <RegisterDialog
@@ -109,37 +158,37 @@ export function NavBar(): JSX.Element {
         loading={userState.isRegisteringUser}
         form={{
           firstName: {
-            ref: register,
-            error: errors.firstName,
+            ref: registerFormRegister,
+            error: registerFormErrors.firstName,
           },
           lastName: {
-            ref: register,
-            error: errors.lastName,
+            ref: registerFormRegister,
+            error: registerFormErrors.lastName,
           },
           emailAddress: {
-            ref: register,
-            error: errors.emailAddress,
+            ref: registerFormRegister,
+            error: registerFormErrors.emailAddress,
           },
           password: {
-            ref: register,
-            error: errors.password,
+            ref: registerFormRegister,
+            error: registerFormErrors.password,
           },
           confirmPassword: {
-            ref: register,
-            error: errors.confirmPassword,
+            ref: registerFormRegister,
+            error: registerFormErrors.confirmPassword,
           },
         }}
-        onSubmit={handleSubmit(async (userInformation: RegisterDialogFormInterface) => {
+        onSubmit={registerFormHandleSubmit(async (registerDialogForm: RegisterDialogFormInterface) => {
           // call api to register use
           await userActions.registerUser({
-            ...userInformation,
+            ...registerDialogForm,
           });
           // if there is an error after
           // trying to register user then
           // return now
           if (userState.hasRegisterUserError) return;
           // reset form if registration was successful
-          reset({
+          registerFormReset({
             firstName: '',
             lastName: '',
             emailAddress: '',
@@ -156,6 +205,45 @@ export function NavBar(): JSX.Element {
           if (userState.isRegisteringUser) return;
           // close dialog if we are not reisgtering a user
           uiActions.setIsRegisterDialogOpen(false);
+        }}
+      />
+      <LoginDialog
+        open={uiState.isLoginDialogOpen}
+        loading={userState.isLoggingInUser}
+        form={{
+          emailAddress: {
+            ref: loginFormRegister,
+            error: loginFormErrors.emailAddress,
+          },
+          password: {
+            ref: loginFormRegister,
+            error: loginFormErrors.password,
+          },
+        }}
+        onSubmit={loginFormHandleSubmit(async (loginDialogForm: LoginDialogFormInterface) => {
+          // call api to register use
+          await userActions.loginUser({
+            ...loginDialogForm,
+          });
+          // if there is an error after
+          // trying to register user then
+          // return now
+          if (userState.hasLoginUserError) return;
+          // reset form if registration was successful
+          loginFormReset({
+            emailAddress: '',
+            password: '',
+          });
+          // close the register dialog since
+          // registration was successful
+          uiActions.setIsLoginDialogOpen(false);
+        }) as any}
+        onClose={() => {
+          // if we are rgistering a user
+          // do not allow closing of the dialog
+          if (userState.isRegisteringUser) return;
+          // close dialog if we are not reisgtering a user
+          uiActions.setIsLoginDialogOpen(false);
         }}
       />
     </>

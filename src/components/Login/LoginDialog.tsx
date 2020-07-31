@@ -1,218 +1,129 @@
-// import React, {
-//   useState, useCallback, useRef, Fragment,
-// } from 'react';
-// import PropTypes from 'prop-types';
-// import classNames from 'classnames';
-// import { withRouter } from 'react-router-dom';
-// import {
-//   TextField,
-//   Button,
-//   Checkbox,
-//   Typography,
-//   FormControlLabel,
-//   withStyles,
-// } from '@material-ui/core';
-// import FormDialog from '../../../shared/components/FormDialog';
-// import HighlightedText from '../../../shared/components/HighlightedText';
-// import ButtonCircularProgress from '../../../shared/components/ButtonCircularProgress';
-// import VisibilityPasswordTextField from '../../../shared/components/VisibilityPasswordTextField';
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+// node_modules
+import {
+  Box,
+  TextField, IconButton, Typography, Dialog, DialogTitle, DialogContent, DialogActions, Button, Collapse,
+} from '@material-ui/core';
+import CloseIcon from '@material-ui/icons/Close';
+import React from 'react';
 
-// const styles = (theme) => ({
-//   forgotPassword: {
-//     marginTop: theme.spacing(2),
-//     color: theme.palette.primary.main,
-//     cursor: 'pointer',
-//     '&:enabled:hover': {
-//       color: theme.palette.primary.dark,
-//     },
-//     '&:enabled:focus': {
-//       color: theme.palette.primary.dark,
-//     },
-//   },
-//   disabledText: {
-//     cursor: 'auto',
-//     color: theme.palette.text.disabled,
-//   },
-//   formControlLabel: {
-//     marginRight: 0,
-//   },
-// });
+// components
 
-// function LoginDialog(props) {
-//   const {
-//     setStatus,
-//     history,
-//     classes,
-//     onClose,
-//     openChangePasswordDialog,
-//     status,
-//   } = props;
-//   const [isLoading, setIsLoading] = useState(false);
-//   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-//   const loginEmail = useRef();
-//   const loginPassword = useRef();
+// styles
+import { useLoginDialogStyles } from './LoginDialog.styles';
 
-//   const login = useCallback(() => {
-//     setIsLoading(true);
-//     setStatus(null);
-//     if (loginEmail.current.value !== 'test@web.com') {
-//       setTimeout(() => {
-//         setStatus('invalidEmail');
-//         setIsLoading(false);
-//       }, 1500);
-//     } else if (loginPassword.current.value !== 'test') {
-//       setTimeout(() => {
-//         setStatus('invalidPassword');
-//         setIsLoading(false);
-//       }, 1500);
-//     } else {
-//       setTimeout(() => {
-//         history.push('/c/dashboard');
-//       }, 150);
-//     }
-//   }, [setIsLoading, loginEmail, loginPassword, history, setStatus]);
+// form
+export interface LoginDialogFormInterface {
+  emailAddress: string;
+  password: string;
+}
 
-//   return (
-//     <>
-//       <FormDialog
-//         open
-//         onClose={onClose}
-//         loading={isLoading}
-//         onFormSubmit={(e) => {
-//           e.preventDefault();
-//           login();
-//         }}
-//         hideBackdrop
-//         headline="Login"
-//         content={(
-//           <>
-//             <TextField
-//               variant="outlined"
-//               margin="normal"
-//               error={status === 'invalidEmail'}
-//               required
-//               fullWidth
-//               label="Email Address"
-//               inputRef={loginEmail}
-//               autoFocus
-//               autoComplete="off"
-//               type="email"
-//               onChange={() => {
-//                 if (status === 'invalidEmail') {
-//                   setStatus(null);
-//                 }
-//               }}
-//               helperText={
-//                 status === 'invalidEmail'
-//                 && "This email address isn't associated with an account."
-//               }
-//               FormHelperTextProps={{ error: true }}
-//             />
-//             <VisibilityPasswordTextField
-//               variant="outlined"
-//               margin="normal"
-//               required
-//               fullWidth
-//               error={status === 'invalidPassword'}
-//               label="Password"
-//               inputRef={loginPassword}
-//               autoComplete="off"
-//               onChange={() => {
-//                 if (status === 'invalidPassword') {
-//                   setStatus(null);
-//                 }
-//               }}
-//               helperText={
-//                 status === 'invalidPassword' ? (
-//                   <span>
-//                     Incorrect password. Try again, or click on
-//                     {' '}
-//                     <b>&quot;Forgot Password?&quot;</b>
-//                     {' '}
-//                     to reset it.
-//                   </span>
-//                 ) : (
-//                   ''
-//                 )
-//               }
-//               FormHelperTextProps={{ error: true }}
-//               onVisibilityChange={setIsPasswordVisible}
-//               isVisible={isPasswordVisible}
-//             />
-//             <FormControlLabel
-//               className={classes.formControlLabel}
-//               control={<Checkbox color="primary" />}
-//               label={<Typography variant="body1">Remember me</Typography>}
-//             />
-//             {status === 'verificationEmailSend' ? (
-//               <HighlightedText>
-//                 We have send instructions on how to reset your password to your
-//                 email address
-//               </HighlightedText>
-//             ) : (
-//               <HighlightedText>
-//                 Email is:
-//                 {' '}
-//                 <b>test@web.com</b>
-//                 <br />
-//                 Password is:
-//                 {' '}
-//                 <b>test</b>
-//               </HighlightedText>
-//             )}
-//           </>
-//         )}
-//         actions={(
-//           <>
-//             <Button
-//               type="submit"
-//               fullWidth
-//               variant="contained"
-//               color="secondary"
-//               disabled={isLoading}
-//               size="large"
-//             >
-//               Login
-//               {isLoading && <ButtonCircularProgress />}
-//             </Button>
-//             <Typography
-//               align="center"
-//               className={classNames(
-//                 classes.forgotPassword,
-//                 isLoading ? classes.disabledText : null,
-//               )}
-//               color="primary"
-//               onClick={isLoading ? null : openChangePasswordDialog}
-//               tabIndex={0}
-//               role="button"
-//               onKeyDown={(event) => {
-//                 // For screenreaders listen to space and enter events
-//                 if (
-//                   (!isLoading && event.keyCode === 13)
-//                   || event.keyCode === 32
-//                 ) {
-//                   openChangePasswordDialog();
-//                 }
-//               }}
-//             >
-//               Forgot Password?
-//             </Typography>
-//           </>
-//         )}
-//       />
-//     </>
-//   );
-// }
+export interface LoginDialogPropsInterface {
+  open: boolean;
+  loading?: boolean
+  form: {
+    emailAddress: {
+      ref?: any;
+      value?: any;
+      error?: { message?: string };
+    };
+    password: {
+      ref?: any;
+      value?: any;
+      error?: { message?: string };
+    };
+  };
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  onSubmit?:(formData: LoginDialogFormInterface) => void;
+  onClose?: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
+}
 
-// LoginDialog.propTypes = {
-//   classes: PropTypes.object.isRequired,
-//   onClose: PropTypes.func.isRequired,
-//   setStatus: PropTypes.func.isRequired,
-//   openChangePasswordDialog: PropTypes.func.isRequired,
-//   history: PropTypes.object.isRequired,
-//   status: PropTypes.string,
-// };
-
-// export default withRouter(withStyles(styles)(LoginDialog));
-
-export {};
+export function LoginDialog(props: LoginDialogPropsInterface): JSX.Element {
+  // deconstruct for ease
+  const {
+    open,
+    loading,
+    form,
+    onClose,
+    onSubmit,
+  } = props;
+  // styles
+  const loginDialogStyles = useLoginDialogStyles();
+  // render component
+  return (
+    <>
+      <Dialog
+        scroll="body"
+        open={open}
+        onClose={onClose}
+        disableBackdropClick={loading}
+        disableEscapeKeyDown={loading}
+        style={{
+          overflowX: 'auto',
+          overflowY: 'hidden',
+        }}
+      >
+        <form
+          noValidate
+          onSubmit={onSubmit as any}
+        >
+          <DialogTitle>
+            <Box display="flex" justifyContent="space-between">
+              <Typography variant="h5">Login</Typography>
+              <IconButton
+                className={loginDialogStyles.dialogTitleCloseButton}
+                onClick={onClose}
+                disabled={loading}
+                aria-label="Close"
+              >
+                <CloseIcon />
+              </IconButton>
+            </Box>
+          </DialogTitle>
+          <DialogContent>
+            <TextField
+              className={loginDialogStyles.dialogContentInput}
+              autoComplete="off"
+              fullWidth
+              variant="outlined"
+              label="Email Address"
+              name="emailAddress"
+              value={form.emailAddress.value}
+              inputRef={form.emailAddress.ref}
+              error={!!form.emailAddress.error}
+              helperText={form.emailAddress.error?.message}
+            />
+            <TextField
+              className={loginDialogStyles.dialogContentInput}
+              autoComplete="off"
+              fullWidth
+              variant="outlined"
+              label="Password"
+              name="password"
+              value={form.password.value}
+              inputRef={form.password.ref}
+              error={!!form.password.error}
+              helperText={form.password.error?.message}
+            />
+          </DialogContent>
+          <DialogActions
+            className={loginDialogStyles.dialogActions}
+          >
+            <Button
+              color="primary"
+              className={loginDialogStyles.dialogActionsButton}
+              variant="contained"
+              size="large"
+              type="submit"
+              disabled={loading}
+            >
+              Login
+            </Button>
+          </DialogActions>
+        </form>
+      </Dialog>
+    </>
+  );
+}
