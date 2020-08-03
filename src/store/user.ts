@@ -19,29 +19,34 @@ import { RegisterDialogFormInterface } from '../components/Register/RegisterDial
 import { LoginDialogFormInterface } from '../components/Login/LoginDialog';
 
 export interface UserStoreInterface {
+  // data values
   session: {
     jwt: string;
-  }
-  registerUserError: Error | undefined;
-  loginUserError: Error | undefined;
-  registerUserErrorMessage: Computed<UserStoreInterface, string>
-  loginUserErrorMessage: Computed<UserStoreInterface, string>
+  },
+  decodedJwt: Computed<UserStoreInterface, { [key: string]: any } | undefined>,
   isRegisteringUser: boolean;
   isLoggingInUser: boolean;
+  registerUserError: Error | undefined;
+  loginUserError: Error | undefined;
+  // computed values
+  registerUserErrorMessage: Computed<UserStoreInterface, string>
+  loginUserErrorMessage: Computed<UserStoreInterface, string>
   isLoggedIn: Computed<UserStoreInterface, boolean>
   hasRegisterUserError: Computed<UserStoreInterface, boolean>
   hasLoginUserError: Computed<UserStoreInterface, boolean>
-  decodedJwt: Computed<UserStoreInterface, { [key: string]: any } | undefined>
+  // actions
   setSessionJwt: Action<UserStoreInterface, string>;
   setIsRegisteringUser: Action<UserStoreInterface, boolean>;
   setIsLoggingInUser: Action<UserStoreInterface, boolean>;
   setRegisterUserError: Action<UserStoreInterface, Error | undefined>;
   setLoginUserError: Action<UserStoreInterface, Error | undefined>;
+  // thunks
   registerUser: Thunk<UserStoreInterface, RegisterDialogFormInterface, UserStoreInterface>;
   loginUser: Thunk<UserStoreInterface, LoginDialogFormInterface, UserStoreInterface>;
 }
 
 export const userStore: UserStoreInterface = {
+  // data values
   session: persist({
     jwt: '',
   }),
@@ -49,8 +54,14 @@ export const userStore: UserStoreInterface = {
   loginUserError: undefined,
   isRegisteringUser: false,
   isLoggingInUser: false,
+  // computed values
+  decodedJwt: computed((state) => {
+    return state.session.jwt !== undefined && state.session.jwt !== ''
+      ? jwtDecode(state.session.jwt)
+      : undefined;
+  }),
   isLoggedIn: computed((state) => {
-    return state.session.jwt !== undefined && state.session.jwt !== '';
+    return state.decodedJwt !== undefined;
   }),
   hasRegisterUserError: computed((state) => {
     return state.registerUserError !== undefined;
@@ -64,11 +75,7 @@ export const userStore: UserStoreInterface = {
   loginUserErrorMessage: computed((state) => {
     return state.loginUserError?.message || '';
   }),
-  decodedJwt: computed((state) => {
-    return state.session.jwt !== undefined && state.session.jwt !== ''
-      ? jwtDecode(state.session.jwt)
-      : undefined;
-  }),
+  // actioncs
   setSessionJwt: action((state, jwt) => {
     state.session.jwt = jwt;
   }),
@@ -84,6 +91,7 @@ export const userStore: UserStoreInterface = {
   setLoginUserError: action((state, loginUserError) => {
     state.loginUserError = loginUserError;
   }),
+  // thunks
   registerUser: thunk(async (actions, registerUserRequest) => {
     try {
       // deconstruct for ease

@@ -137,8 +137,8 @@ export function NavBar(): JSX.Element {
             !userState.isLoggedIn && !guards.roles(userState.decodedJwt?.roles, guards.ABOUT_PAGE_ROLES)
               ? ''
               : (
-                <Button component={Link} to="/about" color="inherit">
-                  About
+                <Button component={Link} to="/dashboard" color="inherit">
+                  Dashboard
                 </Button>
               )
           }
@@ -250,12 +250,12 @@ export function NavBar(): JSX.Element {
                 },
               }}
               onSubmit={loginFormHandleSubmit(async (loginDialogForm: LoginDialogFormInterface) => {
-                // call api to register use
+                // call api to login user
                 await userActions.loginUser({
                   ...loginDialogForm,
                 });
                 // if there is an error after
-                // trying to register user then
+                // trying to login user then
                 // return now
                 if (userState.hasLoginUserError) return;
                 // reset form if registration was successful
@@ -264,14 +264,14 @@ export function NavBar(): JSX.Element {
                   password: '',
                 });
                 // close the register dialog since
-                // registration was successful
+                // login was successful
                 uiActions.setIsLoginDialogOpen(false);
               }) as any}
               onClose={() => {
                 // if we are rgistering a user
                 // do not allow closing of the dialog
                 if (userState.isRegisteringUser) return;
-                // close dialog if we are not reisgtering a user
+                // close dialog if we are not logging in a user
                 uiActions.setIsLoginDialogOpen(false);
               }}
             />

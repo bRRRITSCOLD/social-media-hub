@@ -17,7 +17,7 @@ import * as guards from './lib/guards';
 import { NavBar } from './components/Nav/NavBar';
 
 // pages
-const About = lazy(() => import('./pages/About'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Home = lazy(() => import('./pages/Home'));
 const TwitterOAuthCallback = lazy(() => import('./pages/Twitter/TwitterOAuthCallback'));
 
@@ -38,8 +38,8 @@ const App: React.FC = () => {
                 : (
                   <Route
                     exact
-                    path="/about"
-                    component={About}
+                    path="/dashboard"
+                    component={Dashboard}
                   />
                 )
             }

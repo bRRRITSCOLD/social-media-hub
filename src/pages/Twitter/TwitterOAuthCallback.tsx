@@ -11,7 +11,7 @@ import TwitterPostForm from '../../components/Twitter/TwitterPostForm/TwitterPos
 // import { useStoreActions, useStoreState } from '../hooks';
 import { useStoreActions, useUrlQueryString } from '../../lib/hooks';
 
-const TwitterOAuthCallback: React.FC = ({ location }: any) => {
+const TwitterOAuthCallback: React.FC = () => {
   // init hooks
   // const twitterStore = useStoreState((state) => state.twitter);
   const twitterActions = useStoreActions((state) => state.twitter);
