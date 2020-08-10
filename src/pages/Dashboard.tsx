@@ -1,7 +1,7 @@
 // node_modules
 import React from 'react';
 import { Button } from '@material-ui/core';
-import { useStoreActions } from '../lib/hooks';
+import { useStoreActions, useStoreState } from '../lib/hooks';
 
 // componenets
 
@@ -9,12 +9,12 @@ import { useStoreActions } from '../lib/hooks';
 
 const Dashboard: React.FC = () => {
   // render component
-  // const twitterStore = useStoreState((state) => state.twitter);
+  const userState = useStoreState((state) => state.user);
   const twitterActions = useStoreActions((state) => state.twitter);
   const onTwitterClick = async () => {
     //
-    await twitterActions.getOAuthRequestToken();
-    return false;
+    await twitterActions.getOAuthRequestToken({ jwt: userState.session.jwt });
+    return true;
   };
   return (
     <>

@@ -8,7 +8,7 @@ import capitalize from 'lodash/capitalize';
 import { useTwitterPostFormStyles } from './TwitterPostForm.styles';
 
 // hooks
-import { useStoreActions } from '../../../lib/hooks';
+// import { useStoreActions } from '../../../lib/hooks';
 
 // models
 
@@ -20,9 +20,9 @@ const TwitterPostForm: React.FC<any> = () => {
     errors,
     reset,
   } = useForm<{ body: string }>();
-  const twitterActions = useStoreActions((state) => state.twitter);
-  const onSubmit = async (data: any): Promise<void> => {
-    await twitterActions.postPost(data);
+  // const twitterActions = useStoreActions((state) => state.twitter);
+  const onSubmit = (_data: any): void => {
+    // await twitterActions.postPost(data);
     reset({
       body: '',
     });

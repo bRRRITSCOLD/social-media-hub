@@ -9,7 +9,7 @@ const socialMediaHubApiClient = axios.create({
 socialMediaHubApiClient.interceptors.response.use((response) => {
   return response;
 }, (error) => {
-  return get(error, 'response');
+  return get(error, 'response', { status: 500, data: { errors: [{ message: get(error, 'message', 'Unknown Error') }] } });
 });
 
 export { socialMediaHubApiClient };

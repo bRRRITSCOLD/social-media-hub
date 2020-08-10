@@ -13,7 +13,7 @@ import get from 'lodash/get';
 import { socialMediaHubApiClient } from '../lib/http';
 
 // models
-import { TwitterPostInterface } from '../models/twitter';
+// import { TwitterPostInterface } from '../models/twitter';
 
 export interface TwitterStoreInterface {
   // posts: TwitterPostInterface[];
@@ -35,7 +35,7 @@ export interface TwitterStoreInterface {
   setGetOAuthRequestTokenError: Action<TwitterStoreInterface, Error | undefined>;
   setGetOAuthAccessTokenError: Action<TwitterStoreInterface, Error | undefined>;
   getOAuthRequestToken: Thunk<TwitterStoreInterface, GetOAuthRequestTokenRequestInterface>;
-  getOAuthAccessToken: Thunk<TwitterStoreInterface, GetOAuthRequestTokenRequestInterface>;
+  getOAuthAccessToken: Thunk<TwitterStoreInterface, GetOAuthAccessTokenRequestInterface>;
 }
 
 export interface GetOAuthRequestTokenRequestInterface {
@@ -94,7 +94,7 @@ export const twitterStore: TwitterStoreInterface = {
   // new
   getOAuthRequestTokenError: undefined,
   getOAuthAccessTokenError: undefined,
-  isGettingOAuthReqeustToken: false,
+  isGettingOAuthRequestToken: false,
   isGettingOAuthAccessToken: false,
   hasGetOAuthRequestTokenError: computed((state) => {
     return state.getOAuthRequestTokenError !== undefined;
@@ -147,7 +147,7 @@ export const twitterStore: TwitterStoreInterface = {
       }
       // indicate we are not regitering any more
       actions.setIsGettingOAuthRequestToken(false);
-      const url = get(getOAuthRequestTokenResponse, 'data.data.getOAuthRequestToken');
+      const url = get(socialMediaHubApiClientResponse, 'data.data.getOAuthRequestToken');
       // console.log(url);
       window.location.replace(url);
     } catch (err) {
@@ -159,14 +159,14 @@ export const twitterStore: TwitterStoreInterface = {
       return;
     }
   }),
-  getOAuthAccessToken: thunk(async (_state, getOAuthAccessTokenRequest: GetOAuthAccessTokenRequestInterface) => {
+  getOAuthAccessToken: thunk(async (actions, getOAuthAccessTokenRequest: GetOAuthAccessTokenRequestInterface) => {
     try {
       // deconstruct for ease
       const { jwt, oAuthVerifier } = getOAuthAccessTokenRequest;
       // indicate we are registering
-      actions.setIsRegisteringUser(true);
+      actions.setIsGettingOAuthAccessToken(true);
       // clear any old errors
-      actions.setRegisterUserError(undefined);
+      actions.setGetOAuthAccessTokenError(undefined);
       // call api to get a u user
       const connectResponse = await socialMediaHubApiClient({
         method: 'POST',
@@ -175,7 +175,20 @@ export const twitterStore: TwitterStoreInterface = {
           'content-type': 'application/json',
           authorization: jwt,
         },
-        data: { query: `{ getOAuthAccessToken(oAuthVerifier: "${oAuthVerifier}") }` },
+        data: {
+          query: `mutation {
+            getOAuthAccessToken(data: {
+              oAuthVerifier: "${oAuthVerifier}"
+            })
+          }`,
+          // query: `mutation getOAuthAccessToken($data: GetOAuthAccessTokenInputType!) {
+          //   getOAuthAccessToken(data: $data) {}
+          // }`,
+          // variable: {
+          //   oAuthVerifier,
+          // },
+        },
+        // `{ getOAuthAccessToken(oAuthVerifier: "${oAuthVerifier}") }` },
         withCredentials: true,
       });
       const url = get(connectResponse, 'data.data.login');
