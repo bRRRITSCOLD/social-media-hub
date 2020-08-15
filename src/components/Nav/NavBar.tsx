@@ -93,8 +93,8 @@ export function NavBar(): JSX.Element {
     <>
       <Dialog
         scroll="body"
-        open={userState.hasRegisterUserError}
-        onClose={() => userActions.setRegisterUserError(undefined)}
+        open={userState.showRegisterUserError}
+        onClose={() => userActions.setShowRegisterUserError(false)}
       >
         <Alert color="error">
           {userState.registerUserErrorMessage}
@@ -102,7 +102,7 @@ export function NavBar(): JSX.Element {
             aria-label="close"
             color="inherit"
             size="small"
-            onClick={() => userActions.setRegisterUserError(undefined)}
+            onClick={() => userActions.setShowRegisterUserError(false)}
           >
             <CloseIcon fontSize="inherit" />
           </IconButton>
@@ -110,8 +110,8 @@ export function NavBar(): JSX.Element {
       </Dialog>
       <Dialog
         scroll="body"
-        open={userState.hasLoginUserError}
-        onClose={() => userActions.setLoginUserError(undefined)}
+        open={userState.showLoginUserError}
+        onClose={() => userActions.setShowLoginUserError(false)}
       >
         <Alert color="error">
           {userState.loginUserErrorMessage}
@@ -119,7 +119,7 @@ export function NavBar(): JSX.Element {
             aria-label="close"
             color="inherit"
             size="small"
-            onClick={() => userActions.setLoginUserError(undefined)}
+            onClick={() => userActions.setShowLoginUserError(false)}
           >
             <CloseIcon fontSize="inherit" />
           </IconButton>
@@ -202,6 +202,10 @@ export function NavBar(): JSX.Element {
                 },
               }}
               onSubmit={registerFormHandleSubmit(async (registerDialogForm: RegisterDialogFormInterface) => {
+                // if we are already registering a user
+                // in then we ant to return and await
+                // the original registration request
+                if (userState.isRegisteringUser) return;
                 // call api to register use
                 await userActions.registerUser({
                   ...registerDialogForm,
@@ -250,6 +254,10 @@ export function NavBar(): JSX.Element {
                 },
               }}
               onSubmit={loginFormHandleSubmit(async (loginDialogForm: LoginDialogFormInterface) => {
+                //  if we are already logging a user
+                // in then we ant to return and await
+                // the original login request
+                if (userState.isLoggingInUser) return;
                 // call api to login user
                 await userActions.loginUser({
                   ...loginDialogForm,

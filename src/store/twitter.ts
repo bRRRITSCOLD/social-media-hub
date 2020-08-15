@@ -26,6 +26,8 @@ export interface TwitterStoreInterface {
   isGettingOAuthAccessToken: boolean;
   getOAuthRequestTokenError: Error | undefined;
   getOAuthAccessTokenError: Error | undefined;
+  showGetOAuthRequestTokenError: boolean;
+  showGetOAuthAccessTokenError: boolean;
   getOAuthRequestTokenErrorMessage: Computed<TwitterStoreInterface, string>;
   getOAuthAccessTokenErrorMessage: Computed<TwitterStoreInterface, string>;
   hasGetOAuthRequestTokenError: Computed<TwitterStoreInterface, boolean>;
@@ -34,6 +36,8 @@ export interface TwitterStoreInterface {
   setIsGettingOAuthAccessToken: Action<TwitterStoreInterface, boolean>;
   setGetOAuthRequestTokenError: Action<TwitterStoreInterface, Error | undefined>;
   setGetOAuthAccessTokenError: Action<TwitterStoreInterface, Error | undefined>;
+  setShowGetOAuthRequestTokenError: Action<TwitterStoreInterface, boolean>;
+  setShowGetOAuthAccessTokenError: Action<TwitterStoreInterface, boolean>;
   getOAuthRequestToken: Thunk<TwitterStoreInterface, GetOAuthRequestTokenRequestInterface>;
   getOAuthAccessToken: Thunk<TwitterStoreInterface, GetOAuthAccessTokenRequestInterface>;
 }
@@ -48,54 +52,14 @@ export interface GetOAuthAccessTokenRequestInterface {
 }
 
 export const twitterStore: TwitterStoreInterface = {
-  // posts: [],
-  // setPosts: action((state, posts) => {
-  //   state.posts = posts;
-  // }),
-  // addPost: action((state, post) => {
-  //   state.posts.push({
-  //     ...post,
-  //     createdDate: get(post, 'createdDate', new Date().toISOString()),
-  //   });
-  // }),
-  // getPosts: thunk(async (state) => {
-  //   try {
-  //     const getPostsResponse = await socialMediaHubApiClient({
-  //       method: 'GET',
-  //       url: '/posts',
-  //     });
-  //     state.setPosts(getPostsResponse.data);
-  //   } catch (err) {
-  //     console.log(err);
-  //   }
-  // }),
-  // postPost: thunk(async (actions, post) => {
-  //   try {
-  //     const newPost = {
-  //       ...post,
-  //       createdDate: get(post, 'createdDate', new Date().toISOString()),
-  //     };
-  //     // indicate we are registering
-  //     actions.set(true);
-  //     // clear any old errors
-  //     actions.setRegisterUserError(undefined);
-  //     // call api to register user
-  //     const postPostResponse = await socialMediaHubApiClient({
-  //       method: 'POST',
-  //       url: '/posts',
-  //       headers: { 'content-type': 'application/json' },
-  //       data: newPost,
-  //     });
-  //     state.addPost(newPost);
-  //   } catch (err) {
-  //     console.log(err);
-  //   }
-  // }),
-  // new
+  // data
   getOAuthRequestTokenError: undefined,
   getOAuthAccessTokenError: undefined,
   isGettingOAuthRequestToken: false,
   isGettingOAuthAccessToken: false,
+  showGetOAuthRequestTokenError: false,
+  showGetOAuthAccessTokenError: false,
+  // computed
   hasGetOAuthRequestTokenError: computed((state) => {
     return state.getOAuthRequestTokenError !== undefined;
   }),
@@ -121,10 +85,18 @@ export const twitterStore: TwitterStoreInterface = {
   setGetOAuthAccessTokenError: action((state, getOAuthAccessTokenError) => {
     state.getOAuthAccessTokenError = getOAuthAccessTokenError;
   }),
+  setShowGetOAuthRequestTokenError: action((state, showGetOAuthRequestTokenError) => {
+    state.showGetOAuthRequestTokenError = showGetOAuthRequestTokenError;
+  }),
+  setShowGetOAuthAccessTokenError: action((state, showGetOAuthAccessTokenError) => {
+    state.showGetOAuthAccessTokenError = showGetOAuthAccessTokenError;
+  }),
   getOAuthRequestToken: thunk(async (actions, getOAuthRequestTokenRequest: GetOAuthRequestTokenRequestInterface) => {
     try {
       // deconstruct request for ease
       const { jwt } = getOAuthRequestTokenRequest;
+      // indicate to not show error
+      actions.setShowGetOAuthRequestTokenError(false);
       // indicate we are getting oauth tokens
       actions.setIsGettingOAuthRequestToken(true);
       // clear any old errors
@@ -137,7 +109,11 @@ export const twitterStore: TwitterStoreInterface = {
           'content-type': 'application/json',
           authorization: jwt,
         },
-        data: { query: '{ getOAuthRequestToken }' },
+        data: {
+          query: `mutation {
+            twitterOAuthRequestToken
+          }`,
+        },
         withCredentials: true,
       });
       // validate response is okay
@@ -147,14 +123,19 @@ export const twitterStore: TwitterStoreInterface = {
       }
       // indicate we are not regitering any more
       actions.setIsGettingOAuthRequestToken(false);
-      const url = get(socialMediaHubApiClientResponse, 'data.data.getOAuthRequestToken');
-      // console.log(url);
+      // get the oauth authorize url
+      const url = get(socialMediaHubApiClientResponse, 'data.data.twitterOAuthRequestToken');
+      // navigate to the oauth authorize url
       window.location.replace(url);
+      // return explicitly
+      return;
     } catch (err) {
       // set the error in store
       actions.setGetOAuthRequestTokenError(err);
       // indicate we are not regitering any more
       actions.setIsGettingOAuthRequestToken(false);
+      // indicate to show error
+      actions.setShowGetOAuthRequestTokenError(true);
       // return explicitly
       return;
     }
@@ -163,12 +144,14 @@ export const twitterStore: TwitterStoreInterface = {
     try {
       // deconstruct for ease
       const { jwt, oAuthVerifier } = getOAuthAccessTokenRequest;
+      // indicate to not show error
+      actions.setShowGetOAuthAccessTokenError(false);
       // indicate we are registering
       actions.setIsGettingOAuthAccessToken(true);
       // clear any old errors
       actions.setGetOAuthAccessTokenError(undefined);
       // call api to get a u user
-      const connectResponse = await socialMediaHubApiClient({
+      const socialMediaHubApiClientResponse = await socialMediaHubApiClient({
         method: 'POST',
         url: '/graphql',
         headers: {
@@ -177,24 +160,32 @@ export const twitterStore: TwitterStoreInterface = {
         },
         data: {
           query: `mutation {
-            getOAuthAccessToken(data: {
+            twitterOAuthAccessToken(data: {
               oAuthVerifier: "${oAuthVerifier}"
             })
           }`,
-          // query: `mutation getOAuthAccessToken($data: GetOAuthAccessTokenInputType!) {
-          //   getOAuthAccessToken(data: $data) {}
-          // }`,
-          // variable: {
-          //   oAuthVerifier,
-          // },
         },
-        // `{ getOAuthAccessToken(oAuthVerifier: "${oAuthVerifier}") }` },
         withCredentials: true,
       });
-      const url = get(connectResponse, 'data.data.login');
-      window.location.replace(url);
+      // validate response is okay
+      if (socialMediaHubApiClientResponse.status !== 200) {
+        // build and throw error
+        throw new Error(get(socialMediaHubApiClientResponse, 'data.errors[0].message', 'Unknown error.'));
+      }
+      // indicate we are not regitering any more
+      actions.setIsGettingOAuthAccessToken(false);
+      // return explicitly
+      return;
+      //
     } catch (err) {
-      console.log(err);
+      // set the error in store
+      actions.setGetOAuthAccessTokenError(err);
+      // indicate we are not regitering any more
+      actions.setIsGettingOAuthAccessToken(false);
+      // indicate to show error
+      actions.setShowGetOAuthAccessTokenError(true);
+      // return explicitly
+      return;
     }
   }),
 };

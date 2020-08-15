@@ -31,6 +31,8 @@ export interface UserStoreInterface {
   registerUserError: Error | undefined;
   loginUserError: Error | undefined;
   refreshUserJwtError: Error | undefined;
+  showLoginUserError: boolean;
+  showRegisterUserError: boolean;
   // computed values
   registerUserErrorMessage: Computed<UserStoreInterface, string>
   loginUserErrorMessage: Computed<UserStoreInterface, string>
@@ -46,6 +48,8 @@ export interface UserStoreInterface {
   setRegisterUserError: Action<UserStoreInterface, Error | undefined>;
   setLoginUserError: Action<UserStoreInterface, Error | undefined>;
   setRefreshUserJwtError: Action<UserStoreInterface, Error | undefined>;
+  setShowLoginUserError: Action<UserStoreInterface, boolean>;
+  setShowRegisterUserError: Action<UserStoreInterface, boolean>;
   // thunks
   registerUser: Thunk<UserStoreInterface, RegisterDialogFormInterface, UserStoreInterface>;
   loginUser: Thunk<UserStoreInterface, LoginDialogFormInterface, UserStoreInterface>;
@@ -64,6 +68,8 @@ export const userStore: UserStoreInterface = {
   registerUserError: undefined,
   loginUserError: undefined,
   refreshUserJwtError: undefined,
+  showLoginUserError: false,
+  showRegisterUserError: false,
   // computed values
   decodedJwt: computed((state) => {
     return state.session.jwt !== undefined && state.session.jwt !== ''
@@ -110,6 +116,12 @@ export const userStore: UserStoreInterface = {
   setRefreshUserJwtError: action((state, refreshUserJwtError) => {
     state.refreshUserJwtError = refreshUserJwtError;
   }),
+  setShowLoginUserError: action((state, showLoginUserError) => {
+    state.showLoginUserError = showLoginUserError;
+  }),
+  setShowRegisterUserError: action((state, showRegisterUserError) => {
+    state.showRegisterUserError = showRegisterUserError;
+  }),
   // thunks
   registerUser: thunk(async (actions, registerUserRequest) => {
     try {
@@ -120,6 +132,8 @@ export const userStore: UserStoreInterface = {
         emailAddress,
         password,
       } = registerUserRequest;
+      // indicate to show error
+      actions.setShowRegisterUserError(false);
       // indicate we are registering
       actions.setIsRegisteringUser(true);
       // clear any old errors
@@ -162,6 +176,8 @@ export const userStore: UserStoreInterface = {
       actions.setRegisterUserError(err);
       // indicate we are not regitering any more
       actions.setIsRegisteringUser(false);
+      // indicate to show error
+      actions.setShowRegisterUserError(true);
       // return explicitly
       return;
     }
@@ -173,6 +189,8 @@ export const userStore: UserStoreInterface = {
         emailAddress,
         password,
       } = loginUserRequest;
+      // indicate not to show error
+      actions.setShowLoginUserError(false);
       // indicate we are registering
       actions.setIsLoggingInUser(true);
       // clear any old errors
@@ -213,6 +231,8 @@ export const userStore: UserStoreInterface = {
       actions.setLoginUserError(err);
       // indicate we are not regitering any more
       actions.setIsLoggingInUser(false);
+      // indicate to show error
+      actions.setShowLoginUserError(true);
       // return explicitly
       return;
     }
