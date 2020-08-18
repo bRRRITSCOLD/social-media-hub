@@ -134,7 +134,7 @@ export function NavBar(): JSX.Element {
             Home
           </Button>
           {
-            !userState.isLoggedIn && !guards.roles(userState.decodedJwt?.roles, guards.ABOUT_PAGE_ROLES)
+            !userState.isLoggedIn && !guards.roles(userState.decodedJWT?.roles, guards.ABOUT_PAGE_ROLES)
               ? ''
               : (
                 <Button component={Link} to="/dashboard" color="inherit">

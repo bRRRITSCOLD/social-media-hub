@@ -1,0 +1,39 @@
+// node_modules
+import { makeStyles } from '@material-ui/core/styles';
+import { css } from '../../../lib/utils';
+
+const useCardStyles = makeStyles((theme) => ({
+  card: {
+    border: '0',
+    marginBottom: '30px',
+    marginTop: '30px',
+    borderRadius: '6px',
+    color: 'black',
+    background: theme.whiteColor,
+    width: '100%',
+    boxShadow: '0 1px 4px 0 black, 0.14)',
+    position: 'relative',
+    display: 'flex',
+    flexDirection: 'column',
+    minWidth: '0',
+    wordWrap: 'break-word',
+    fontSize: '.875rem',
+  },
+  // cardPlain: {
+  //   background: 'transparent',
+  //   boxShadow: 'none',
+  // },
+  // cardProfile: {
+  //   marginTop: '30px',
+  //   textAlign: 'center',
+  // },
+  // cardChart: {
+  //   '& p': {
+  //     marginTop: '0px',
+  //     paddingTop: '0px',
+  //   },
+  // },
+}
+));
+
+export { useCardStyles };

@@ -24,36 +24,45 @@ export interface UserStoreInterface {
     jwt: string;
     jwtRefreshToken: string;
   },
-  decodedJwt: Computed<UserStoreInterface, { [key: string]: any } | undefined>,
+  // static/data values
   isRegisteringUser: boolean;
   isLoggingInUser: boolean;
-  isRefreshingUserJwt: boolean;
+  isRefreshingUserJWT: boolean;
+
   registerUserError: Error | undefined;
   loginUserError: Error | undefined;
-  refreshUserJwtError: Error | undefined;
+  refreshUserJWTError: Error | undefined;
+
   showLoginUserError: boolean;
   showRegisterUserError: boolean;
   // computed values
-  registerUserErrorMessage: Computed<UserStoreInterface, string>
-  loginUserErrorMessage: Computed<UserStoreInterface, string>
-  isLoggedIn: Computed<UserStoreInterface, boolean>
-  hasRegisterUserError: Computed<UserStoreInterface, boolean>
-  hasLoginUserError: Computed<UserStoreInterface, boolean>
+  decodedJWT: Computed<UserStoreInterface, { [key: string]: any } | undefined>,
+
+  isLoggedIn: Computed<UserStoreInterface, boolean>;
+  isAuthenticatedWithTwitter: Computed<UserStoreInterface, boolean>;
+
+  registerUserErrorMessage: Computed<UserStoreInterface, string>;
+  loginUserErrorMessage: Computed<UserStoreInterface, string>;
+
+  hasRegisterUserError: Computed<UserStoreInterface, boolean>;
+  hasLoginUserError: Computed<UserStoreInterface, boolean>;
   // actions
-  setSessionJwt: Action<UserStoreInterface, string>;
-  setSessionJwtRefreshToken: Action<UserStoreInterface, string>;
+  setSessionJWT: Action<UserStoreInterface, string>;
+  setSessionJWTRefreshToken: Action<UserStoreInterface, string>;
+
   setIsRegisteringUser: Action<UserStoreInterface, boolean>;
   setIsLoggingInUser: Action<UserStoreInterface, boolean>;
-  setIsRefreshingUserJwt: Action<UserStoreInterface, boolean>;
+  setIsRefreshingUserJWT: Action<UserStoreInterface, boolean>;
+
   setRegisterUserError: Action<UserStoreInterface, Error | undefined>;
   setLoginUserError: Action<UserStoreInterface, Error | undefined>;
-  setRefreshUserJwtError: Action<UserStoreInterface, Error | undefined>;
+  setRefreshUserJWTError: Action<UserStoreInterface, Error | undefined>;
   setShowLoginUserError: Action<UserStoreInterface, boolean>;
   setShowRegisterUserError: Action<UserStoreInterface, boolean>;
   // thunks
   registerUser: Thunk<UserStoreInterface, RegisterDialogFormInterface, UserStoreInterface>;
   loginUser: Thunk<UserStoreInterface, LoginDialogFormInterface, UserStoreInterface>;
-  refreshUserJwt: Thunk<UserStoreInterface, { jwt: string; jwtRefreshToken: string; }, UserStoreInterface>;
+  refreshUserJWT: Thunk<UserStoreInterface, { jwt: string; jwtRefreshToken: string; }, UserStoreInterface>;
 }
 
 export const userStore: UserStoreInterface = {
@@ -64,20 +73,23 @@ export const userStore: UserStoreInterface = {
   }),
   isRegisteringUser: false,
   isLoggingInUser: false,
-  isRefreshingUserJwt: false,
+  isRefreshingUserJWT: false,
   registerUserError: undefined,
   loginUserError: undefined,
-  refreshUserJwtError: undefined,
+  refreshUserJWTError: undefined,
   showLoginUserError: false,
   showRegisterUserError: false,
   // computed values
-  decodedJwt: computed((state) => {
+  decodedJWT: computed((state) => {
     return state.session.jwt !== undefined && state.session.jwt !== ''
       ? jwtDecode(state.session.jwt)
       : undefined;
   }),
   isLoggedIn: computed((state) => {
-    return state.decodedJwt !== undefined;
+    return state.decodedJWT !== undefined;
+  }),
+  isAuthenticatedWithTwitter: computed((state) => {
+    return (get(state, 'decodedJWT.roles', [] as string[]) as string[]).includes('Twitter User');
   }),
   hasRegisterUserError: computed((state) => {
     return state.registerUserError !== undefined;
@@ -92,10 +104,10 @@ export const userStore: UserStoreInterface = {
     return state.loginUserError?.message || '';
   }),
   // actioncs
-  setSessionJwt: action((state, jwt) => {
+  setSessionJWT: action((state, jwt) => {
     state.session.jwt = jwt;
   }),
-  setSessionJwtRefreshToken: action((state, jwtRefreshToken) => {
+  setSessionJWTRefreshToken: action((state, jwtRefreshToken) => {
     state.session.jwtRefreshToken = jwtRefreshToken;
   }),
   setIsRegisteringUser: action((state, isRegisteringUser) => {
@@ -104,8 +116,8 @@ export const userStore: UserStoreInterface = {
   setIsLoggingInUser: action((state, isLogginInUser) => {
     state.isRegisteringUser = isLogginInUser;
   }),
-  setIsRefreshingUserJwt: action((state, isRefreshingUserJwt) => {
-    state.isRefreshingUserJwt = isRefreshingUserJwt;
+  setIsRefreshingUserJWT: action((state, isRefreshingUserJWT) => {
+    state.isRefreshingUserJWT = isRefreshingUserJWT;
   }),
   setRegisterUserError: action((state, registerUserError) => {
     state.registerUserError = registerUserError;
@@ -113,8 +125,8 @@ export const userStore: UserStoreInterface = {
   setLoginUserError: action((state, loginUserError) => {
     state.loginUserError = loginUserError;
   }),
-  setRefreshUserJwtError: action((state, refreshUserJwtError) => {
-    state.refreshUserJwtError = refreshUserJwtError;
+  setRefreshUserJWTError: action((state, refreshUserJWTError) => {
+    state.refreshUserJWTError = refreshUserJWTError;
   }),
   setShowLoginUserError: action((state, showLoginUserError) => {
     state.showLoginUserError = showLoginUserError;
@@ -203,7 +215,8 @@ export const userStore: UserStoreInterface = {
         data: {
           query: `mutation loginUser($data: LoginUserInputType!) {
             loginUser(data: $data) {
-              jwt
+              jwt,
+              jwtRefreshToken
             }
           }`,
           variables: {
@@ -220,8 +233,8 @@ export const userStore: UserStoreInterface = {
         throw new Error(get(socialMediaHubApiClientResponse, 'data.errors[0].message', 'Unknown error.'));
       }
       // set session jwt
-      actions.setSessionJwt((socialMediaHubApiClientResponse.data as { data: { loginUser: { jwt: string; }; }; }).data.loginUser.jwt);
-      actions.setSessionJwtRefreshToken((socialMediaHubApiClientResponse.data as { data: { loginUser: { jwtRefreshToken: string; }; }; }).data.loginUser.jwtRefreshToken);
+      actions.setSessionJWT((socialMediaHubApiClientResponse.data as { data: { loginUser: { jwt: string; }; }; }).data.loginUser.jwt);
+      actions.setSessionJWTRefreshToken((socialMediaHubApiClientResponse.data as { data: { loginUser: { jwtRefreshToken: string; }; }; }).data.loginUser.jwtRefreshToken);
       // indicate we are not regitering any more
       actions.setIsLoggingInUser(false);
       // return explicitly
@@ -237,28 +250,27 @@ export const userStore: UserStoreInterface = {
       return;
     }
   }),
-  refreshUserJwt: thunk(async (actions, refreshUserJwtRequest) => {
+  refreshUserJWT: thunk(async (actions, refreshUserJWTRequest) => {
     try {
       // indicate we are refreshing a fwt
-      actions.setIsRefreshingUserJwt(true);
+      actions.setIsRefreshingUserJWT(true);
       // clear any old errors
-      actions.setRefreshUserJwtError(undefined);
+      actions.setRefreshUserJWTError(undefined);
       // call api to register user
       const socialMediaHubApiClientResponse = await socialMediaHubApiClient({
         method: 'POST',
         url: '/graphql',
-        headers: { 'content-type': 'application/json' },
+        headers: { 'content-type': 'application/json', authorization: refreshUserJWTRequest.jwt },
         data: {
-          query: `mutation refreshJwt($data: RefreshUserJwtInputType!) {
-            loginUser(data: $data) {
+          query: `mutation refreshUserJWT($data: RefreshUserJWTInputType!) {
+            refreshUserJWT(data: $data) {
               jwt,
-              refreshToken
+              jwtRefreshToken
             }
           }`,
           variables: {
             data: {
-              jwt: refreshUserJwtRequest.jwt,
-              refreshToken: refreshUserJwtRequest.jwtRefreshToken,
+              jwtRefreshToken: refreshUserJWTRequest.jwtRefreshToken,
             },
           },
         },
@@ -269,17 +281,17 @@ export const userStore: UserStoreInterface = {
         throw new Error(get(socialMediaHubApiClientResponse, 'data.errors[0].message', 'Unknown error.'));
       }
       // set session jwt
-      actions.setSessionJwt((socialMediaHubApiClientResponse.data as { data: { refreshUserJwt: { jwt: string; }; }; }).data.refreshUserJwt.jwt);
-      actions.setSessionJwtRefreshToken((socialMediaHubApiClientResponse.data as { data: { refreshUserJwt: { jwtRefreshToken: string; }; }; }).data.refreshUserJwt.jwtRefreshToken);
+      actions.setSessionJWT((socialMediaHubApiClientResponse.data as { data: { refreshUserJWT: { jwt: string; }; }; }).data.refreshUserJWT.jwt);
+      actions.setSessionJWTRefreshToken((socialMediaHubApiClientResponse.data as { data: { refreshUserJWT: { jwtRefreshToken: string; }; }; }).data.refreshUserJWT.jwtRefreshToken);
       // indicate we are not regitering any more
-      actions.setIsRefreshingUserJwt(false);
+      actions.setIsRefreshingUserJWT(false);
       // return explicitly
       return;
     } catch (err) {
       // set the error in store
-      actions.setRefreshUserJwtError(err);
+      actions.setRefreshUserJWTError(err);
       // indicate we are not regitering any more
-      actions.setIsRefreshingUserJwt(false);
+      actions.setIsRefreshingUserJWT(false);
       // return explicitly
       return;
     }

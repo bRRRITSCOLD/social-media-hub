@@ -14,6 +14,7 @@ import { useStoreActions, useStoreState, useUrlQueryString } from '../../lib/hoo
 const TwitterOAuthCallback: React.FC = () => {
   // init hooks
   const userState = useStoreState((state) => state.user);
+  const twitterState = useStoreState((state) => state.twitter);
   const userActions = useStoreActions((state) => state.user);
   const twitterActions = useStoreActions((state) => state.twitter);
   const urlQueryString = useUrlQueryString();
@@ -28,7 +29,7 @@ const TwitterOAuthCallback: React.FC = () => {
     // now we must refresh jwt token as
     // to get correct roles now that we
     // completed oauth access to twitter
-    await userActions.refreshUserJwt({
+    if (!twitterState.hasGetOAuthAccessTokenError) await userActions.refreshUserJWT({
       jwt: userState.session.jwt,
       jwtRefreshToken: userState.session.jwtRefreshToken,
     });
@@ -40,6 +41,7 @@ const TwitterOAuthCallback: React.FC = () => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     onUseEffect();
   }, []);
+  // render component
   return (
     <>
       <h1>CALL BACK!</h1>

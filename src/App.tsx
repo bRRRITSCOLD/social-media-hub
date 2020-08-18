@@ -33,7 +33,7 @@ const App: React.FC = () => {
           <Switch>
             <Route exact path="/" component={Home} />
             {
-              !userState.isLoggedIn || guards.roles(userState.decodedJwt?.roles, guards.ABOUT_PAGE_ROLES)
+              !userState.isLoggedIn || guards.roles(userState.decodedJWT?.roles, guards.ABOUT_PAGE_ROLES)
                 ? ''
                 : (
                   <Route
@@ -44,7 +44,7 @@ const App: React.FC = () => {
                 )
             }
             {
-              !userState.isLoggedIn || guards.roles(userState.decodedJwt?.roles, guards.TWITTER_PAGE_ROLES)
+              !userState.isLoggedIn || guards.roles(userState.decodedJWT?.roles, guards.TWITTER_PAGE_ROLES)
                 ? ''
                 : (
                   <Route

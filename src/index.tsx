@@ -15,7 +15,7 @@ import App from './App';
 import store from './store';
 
 // theme
-import theme from './theme';
+import { theme } from './theme';
 
 // import * as serviceWorker from './serviceWorker';
 

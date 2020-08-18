@@ -39,6 +39,9 @@ module.exports = {
     'react/require-default-props': [0],
     'curly': [0],
     'no-useless-return': [0],
+    '@typescript-eslint/restrict-template-expressions': [0],
+    'react-hooks/exhaustive-deps': [0],
+    'react/jsx-props-no-spreading': [0],
   },
   settings: {
     react: {
