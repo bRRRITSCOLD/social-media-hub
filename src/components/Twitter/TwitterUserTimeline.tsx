@@ -18,14 +18,14 @@ import { Button, Container } from '@material-ui/core';
 // components
 
 export function TwitterUserTimeline(props: {
-  tweetsLoading: boolean;
+  timelineLoading: boolean;
   tweets: any[]
   isAuthenticated: boolean;
   onClickAuthenticate: (event: any) => void | Promise<void>;
 }): JSX.Element {
   // deconstruct for ease
   const {
-    tweetsLoading,
+    timelineLoading,
     tweets,
     isAuthenticated,
     onClickAuthenticate,
@@ -52,13 +52,13 @@ export function TwitterUserTimeline(props: {
                 Authenticate
               </Button>
             )
-            : tweetsLoading
+            : timelineLoading
               ? (
                 <div>Loading user timeline...</div>
               )
               : !tweets || !tweets.length
                 ? (
-                  <div>Loading user timeline...</div>
+                  <div>No user timeline available.</div>
                 )
                 : (
                   <Table>

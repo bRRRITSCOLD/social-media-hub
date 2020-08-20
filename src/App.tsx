@@ -1,14 +1,14 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 // node_modules
-import React, { Suspense, lazy } from 'react';
+import React, { Suspense, lazy, useEffect } from 'react';
 import {
   Redirect, Switch, Route,
 } from 'react-router-dom';
 import Container from '@material-ui/core/Container';
 
 // libraries
-import { useStoreState } from './lib/hooks';
+import { useStoreActions, useStoreState } from './lib/hooks';
 import * as guards from './lib/guards';
 
 // styles
@@ -24,6 +24,26 @@ const TwitterOAuthCallback = lazy(() => import('./pages/Twitter/TwitterOAuthCall
 const App: React.FC = () => {
   // user store specific
   const userState = useStoreState((store) => store.user);
+  const userActions = useStoreActions((store) => store.user);
+  // call use effect only twice (app load
+  // (mount) and app unload (unmount))
+  useEffect(
+    // page load (mount)
+    () => {
+    // start polling if we are
+    // logged in/have jwt
+      if (userState.isLoggedIn && !userState.isPollingRefreshUserJWT) userActions.startPollingRefreshUserJWT({
+        jwt: userState.session.jwt,
+        jwtRefreshToken: userState.session.jwtRefreshToken,
+      });
+      // page unload (unmount)
+      return () => {
+        console.log('UNSUBSCRIBE!!!!!!!!!!')
+        userActions.stopPollingRefreshUserJWT();
+      };
+    },
+    [],
+  );
   // render app
   return (
     <div>

@@ -42,6 +42,7 @@ module.exports = {
     '@typescript-eslint/restrict-template-expressions': [0],
     'react-hooks/exhaustive-deps': [0],
     'react/jsx-props-no-spreading': [0],
+    'no-useless-catch': [0]
   },
   settings: {
     react: {

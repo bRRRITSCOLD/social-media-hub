@@ -1,10 +1,10 @@
 // node_modules
-import { createStore } from 'easy-peasy';
+import { createStore as easyPeasyCreateStore } from 'easy-peasy';
 
 // stores
 import { TwitterStoreInterface, twitterStore } from './twitter';
 import { uiStore, UIStoreInterface } from './ui';
-import { userStore, UserStoreInterface } from './user';
+import { createUserStore, UserStoreInterface } from './user';
 
 export interface StoreInterface {
   twitter: TwitterStoreInterface
@@ -12,10 +12,10 @@ export interface StoreInterface {
   user: UserStoreInterface
 }
 
-const store: StoreInterface = {
-  twitter: twitterStore,
-  ui: uiStore,
-  user: userStore,
-};
-
-export default createStore<StoreInterface>(store);
+export function createStore() {
+  return easyPeasyCreateStore<StoreInterface>({
+    twitter: twitterStore,
+    ui: uiStore,
+    user: createUserStore(),
+  });
+}

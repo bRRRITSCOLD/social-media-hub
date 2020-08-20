@@ -6,7 +6,7 @@ import {
 import Alert from '@material-ui/lab/Alert';
 import CloseIcon from '@material-ui/icons/Close';
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers';
 import MenuIcon from '@material-ui/icons/Menu';
@@ -64,12 +64,14 @@ const loginDialogFormSchema: yup.ObjectSchema<LoginDialogFormInterface | undefin
 });
 
 export function NavBar(): JSX.Element {
-  // ui store specific
+  // ui store specific hooks
   const uiState = useStoreState((state) => state.ui);
   const uiActions = useStoreActions((state) => state.ui);
-  // user store specific
+  // user store specific hooks
   const userState = useStoreState((state) => state.user);
   const userActions = useStoreActions((state) => state.user);
+  // router specific hooks
+  const history = useHistory();
   // register form
   const {
     register: registerFormRegister,
@@ -214,6 +216,14 @@ export function NavBar(): JSX.Element {
                 // trying to register user then
                 // return now
                 if (userState.hasRegisterUserError) return;
+                // log the user in
+                await userActions.loginUser({
+                  emailAddress: registerDialogForm.emailAddress,
+                  password: registerDialogForm.password,
+                });
+                // close the register dialog since
+                // registration was successful
+                uiActions.setIsRegisterDialogOpen(false);
                 // reset form if registration was successful
                 registerFormReset({
                   firstName: '',
@@ -222,9 +232,8 @@ export function NavBar(): JSX.Element {
                   password: '',
                   confirmPassword: '',
                 });
-                // close the register dialog since
-                // registration was successful
-                uiActions.setIsRegisterDialogOpen(false);
+                // travel to dashboard
+                history.push('/dashboard');
               }) as any}
               onClose={() => {
                 // if we are rgistering a user
@@ -266,14 +275,16 @@ export function NavBar(): JSX.Element {
                 // trying to login user then
                 // return now
                 if (userState.hasLoginUserError) return;
+                // close the register dialog since
+                // login was successful
+                uiActions.setIsLoginDialogOpen(false);
                 // reset form if registration was successful
                 loginFormReset({
                   emailAddress: '',
                   password: '',
                 });
-                // close the register dialog since
-                // login was successful
-                uiActions.setIsLoginDialogOpen(false);
+                // travel to dashboard
+                history.push('/dashboard');
               }) as any}
               onClose={() => {
                 // if we are rgistering a user

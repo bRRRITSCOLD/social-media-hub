@@ -15,6 +15,8 @@ import { useStoreActions, useStoreState } from '../../lib/hooks';
 // components
 import { CustomTabsCard } from '../UI/Card/CustomTabsCard';
 import { TwitterUserTimeline } from './TwitterUserTimeline';
+import { TwitterHomeTimeline } from './TwitterHomeTimeline';
+import { TwitterMentionsTimeline } from './TwitterMentionsTimeline';
 
 export function TwitterTimelines(): JSX.Element {
   // user store specific
@@ -67,7 +69,7 @@ export function TwitterTimelines(): JSX.Element {
           icon: PersonIcon,
           content: (
             <TwitterUserTimeline
-              tweetsLoading={twitterState.isGettingUserTimeline}
+              timelineLoading={twitterState.isGettingUserTimeline}
               tweets={twitterState.session.userTimeline}
               isAuthenticated={userState.isAuthenticatedWithTwitter}
               onClickAuthenticate={onTwitterAuthenticateClick}
@@ -78,14 +80,24 @@ export function TwitterTimelines(): JSX.Element {
           name: 'Home',
           icon: HomeIcon,
           content: (
-            <div>Home Timeline</div>
+            <TwitterHomeTimeline
+              timelineLoading={twitterState.isGettingUserTimeline}
+              tweets={twitterState.session.userTimeline}
+              isAuthenticated={userState.isAuthenticatedWithTwitter}
+              onClickAuthenticate={onTwitterAuthenticateClick}
+            />
           ),
         },
         {
           name: 'Mentions',
           icon: AlternateEmailIcon,
           content: (
-            <div>Mentions Timeline</div>
+            <TwitterMentionsTimeline
+              timelineLoading={twitterState.isGettingUserTimeline}
+              tweets={twitterState.session.userTimeline}
+              isAuthenticated={userState.isAuthenticatedWithTwitter}
+              onClickAuthenticate={onTwitterAuthenticateClick}
+            />
           ),
         },
       ]}

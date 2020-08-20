@@ -12,7 +12,7 @@ import './index.css';
 import App from './App';
 
 // store
-import store from './store';
+import { createStore } from './store';
 
 // theme
 import { theme } from './theme';
@@ -20,7 +20,7 @@ import { theme } from './theme';
 // import * as serviceWorker from './serviceWorker';
 
 ReactDOM.render(
-  <StoreProvider store={store}>
+  <StoreProvider store={createStore()}>
     <Router>
       <MuiThemeProvider theme={theme}>
         <CssBaseline />
