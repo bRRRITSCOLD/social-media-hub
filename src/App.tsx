@@ -38,7 +38,6 @@ const App: React.FC = () => {
       });
       // page unload (unmount)
       return () => {
-        console.log('UNSUBSCRIBE!!!!!!!!!!')
         userActions.stopPollingRefreshUserJWT();
       };
     },
