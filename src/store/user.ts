@@ -18,7 +18,9 @@ import {
 } from 'rxjs/operators';
 
 // libraries
-import { refreshUserJWT, socialMediaHubApiClient } from '../lib/http';
+import {
+  loginUser, refreshUserJWT, registerUser,
+} from '../lib/http';
 
 // models
 import { RegisterDialogFormInterface } from '../components/Register/RegisterDialog';
@@ -116,7 +118,10 @@ export function createUserStore(): UserStoreInterface {
       catchError(() => of('EMPTY')),
     );
 
-    refreshUserJWTTicker$ = interval(600000).pipe(concatMap((_: any) => refreshUserJWT$));
+    refreshUserJWTTicker$ = interval(600000).pipe(
+      takeUntil(refreshUserJWTUnsubscribe$),
+      concatMap((_: any) => refreshUserJWT$),
+    );
   };
 
   // return store
@@ -282,34 +287,12 @@ export function createUserStore(): UserStoreInterface {
         // clear any old errors
         actions.setRegisterUserError(undefined);
         // call api to register user
-        const socialMediaHubApiClientResponse = await socialMediaHubApiClient({
-          method: 'POST',
-          url: '/graphql',
-          headers: { 'content-type': 'application/json' },
-          data: {
-            query: `mutation registerUser($data: RegisterUserInputType!) {
-              registerUser(data: $data) {
-                firstName,
-                lastName,
-                emailAddress,
-                password
-              }
-            }`,
-            variables: {
-              data: {
-                firstName,
-                lastName,
-                emailAddress,
-                password,
-              },
-            },
-          },
+        await registerUser({
+          firstName,
+          lastName,
+          emailAddress,
+          password,
         });
-        // validate response is okay
-        if (socialMediaHubApiClientResponse.status !== 200) {
-          // build and throw error
-          throw new Error(get(socialMediaHubApiClientResponse, 'data.errors[0].message', 'Unknown error.'));
-        }
         // indicate we are not regitering any more
         actions.setIsRegisteringUser(false);
         // return explicitly
@@ -339,41 +322,21 @@ export function createUserStore(): UserStoreInterface {
         // clear any old errors
         actions.setLoginUserError(undefined);
         // call api to register user
-        const socialMediaHubApiClientResponse = await socialMediaHubApiClient({
-          method: 'POST',
-          url: '/graphql',
-          headers: { 'content-type': 'application/json' },
-          data: {
-            query: `mutation loginUser($data: LoginUserInputType!) {
-              loginUser(data: $data) {
-                jwt,
-                jwtRefreshToken
-              }
-            }`,
-            variables: {
-              data: {
-                emailAddress,
-                password,
-              },
-            },
-          },
+        const loginUserResponse = await loginUser({
+          emailAddress,
+          password,
         });
-        // validate response is okay
-        if (socialMediaHubApiClientResponse.status !== 200) {
-          // build and throw error
-          throw new Error(get(socialMediaHubApiClientResponse, 'data.errors[0].message', 'Unknown error.'));
-        }
         // set session jwt
-        actions.setSessionJWT((socialMediaHubApiClientResponse.data as { data: { loginUser: { jwt: string; }; }; }).data.loginUser.jwt);
-        actions.setSessionJWTRefreshToken((socialMediaHubApiClientResponse.data as { data: { loginUser: { jwtRefreshToken: string; }; }; }).data.loginUser.jwtRefreshToken);
+        actions.setSessionJWT(loginUserResponse.jwt);
+        actions.setSessionJWTRefreshToken(loginUserResponse.jwtRefreshToken);
         // indicate we are not regitering any more
         actions.setIsLoggingInUser(false);
         // stop old instances of refreshing a user's jwt silently
         actions.stopPollingRefreshUserJWT();
         // start refreshing a user's jwt silently
         actions.startPollingRefreshUserJWT({
-          jwt: (socialMediaHubApiClientResponse.data as { data: { loginUser: { jwt: string; }; }; }).data.loginUser.jwt,
-          jwtRefreshToken: (socialMediaHubApiClientResponse.data as { data: { loginUser: { jwtRefreshToken: string; }; }; }).data.loginUser.jwtRefreshToken,
+          jwt: loginUserResponse.jwt,
+          jwtRefreshToken: loginUserResponse.jwtRefreshToken,
         });
         // return explicitly
         return;
@@ -392,45 +355,31 @@ export function createUserStore(): UserStoreInterface {
     }),
     refreshUserJWT: thunk(async (actions, refreshUserJWTRequest) => {
       try {
-        // indicate we are refreshing a fwt
+        // deconstruct for ease
+        const {
+          jwt,
+          jwtRefreshToken,
+        } = refreshUserJWTRequest;
+        // indicate we are refreshing a jwt
         actions.setIsRefreshingUserJWT(true);
         // clear any old errors
         actions.setRefreshUserJWTError(undefined);
         // call api to register user
-        const socialMediaHubApiClientResponse = await socialMediaHubApiClient({
-          method: 'POST',
-          url: '/graphql',
-          headers: { 'content-type': 'application/json', authorization: refreshUserJWTRequest.jwt },
-          data: {
-            query: `mutation refreshUserJWT($data: RefreshUserJWTInputType!) {
-              refreshUserJWT(data: $data) {
-                jwt,
-                jwtRefreshToken
-              }
-            }`,
-            variables: {
-              data: {
-                jwtRefreshToken: refreshUserJWTRequest.jwtRefreshToken,
-              },
-            },
-          },
+        const refreshUserJWTResponse = await refreshUserJWT({
+          jwt,
+          jwtRefreshToken,
         });
-        // validate response is okay
-        if (socialMediaHubApiClientResponse.status !== 200) {
-          // build and throw error
-          throw new Error(get(socialMediaHubApiClientResponse, 'data.errors[0].message', 'Unknown error.'));
-        }
         // set session jwt
-        actions.setSessionJWT((socialMediaHubApiClientResponse.data as { data: { refreshUserJWT: { jwt: string; }; }; }).data.refreshUserJWT.jwt);
-        actions.setSessionJWTRefreshToken((socialMediaHubApiClientResponse.data as { data: { refreshUserJWT: { jwtRefreshToken: string; }; }; }).data.refreshUserJWT.jwtRefreshToken);
+        actions.setSessionJWT(refreshUserJWTResponse.jwt);
+        actions.setSessionJWTRefreshToken(refreshUserJWTResponse.jwtRefreshToken);
         // indicate we are not regitering any more
         actions.setIsRefreshingUserJWT(false);
         // stop old instances of refreshing a user's jwt silently
         actions.stopPollingRefreshUserJWT();
         // start refreshing a user's jwt silently
         actions.startPollingRefreshUserJWT({
-          jwt: (socialMediaHubApiClientResponse.data as { data: { refreshUserJWT: { jwt: string; }; }; }).data.refreshUserJWT.jwt,
-          jwtRefreshToken: (socialMediaHubApiClientResponse.data as { data: { refreshUserJWT: { jwtRefreshToken: string; }; }; }).data.refreshUserJWT.jwtRefreshToken,
+          jwt: refreshUserJWTResponse.jwt,
+          jwtRefreshToken: refreshUserJWTResponse.jwtRefreshToken,
         });
         // return explicitly
         return;
