@@ -16,6 +16,7 @@ import { Card } from './Card';
 import { CardHeader } from './CardHeader';
 
 export function CustomTabsCard(props: {
+  children?: any;
   title: string;
   tabs: {
     name: string;
@@ -26,6 +27,7 @@ export function CustomTabsCard(props: {
 }): JSX.Element {
   // deconstruct for ease
   const {
+    children,
     title,
     tabs,
     rtlActive,
@@ -81,6 +83,7 @@ export function CustomTabsCard(props: {
           })}
         </Tabs>
       </CardHeader>
+      {children}
       <div>
         {tabs.map((prop, key) => {
           if (key === value) {

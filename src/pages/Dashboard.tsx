@@ -11,7 +11,7 @@ import { Button, Dialog, IconButton } from '@material-ui/core';
 // componenets
 import { GridContainer, GridItem } from '../components/UI/Grid';
 import { Card } from '../components/UI/Card/Card';
-import { TwitterTimelines } from '../components/Twitter/TwitterTimelines';
+import { TwitterTimelines } from '../components/Twitter/TwitterTimeline/TwitterTimelines';
 // import { CardBody } from '../components/UI/Card/CardBody';
 // import { CardFooter } from '../components/UI/Card/CardFooter';
 

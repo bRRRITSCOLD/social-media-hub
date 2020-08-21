@@ -1,9 +1,10 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
 // node_modules
 import { createStore as easyPeasyCreateStore } from 'easy-peasy';
 
 // stores
-import { TwitterStoreInterface, twitterStore } from './twitter';
-import { uiStore, UIStoreInterface } from './ui';
+import { createTwitterStore, TwitterStoreInterface } from './twitter';
+import { createUIStore, UIStoreInterface } from './ui';
 import { createUserStore, UserStoreInterface } from './user';
 
 export interface StoreInterface {
@@ -14,8 +15,8 @@ export interface StoreInterface {
 
 export function createStore() {
   return easyPeasyCreateStore<StoreInterface>({
-    twitter: twitterStore,
-    ui: uiStore,
+    ui: createUIStore(),
+    twitter: createTwitterStore(),
     user: createUserStore(),
   });
 }

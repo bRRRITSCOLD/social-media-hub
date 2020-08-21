@@ -5,7 +5,7 @@ import { Button } from '@material-ui/core';
 
 // componenets
 import { useHistory } from 'react-router-dom';
-import TwitterPostForm from '../../components/Twitter/TwitterPostForm/TwitterPostForm';
+// import TwitterPostForm from '../../components/Twitter/TwitterPostForm/TwitterPostForm';
 // import TwitterPostList from '../components/Twitter/TwitterPostList/TwitterPostList';
 
 // styles
